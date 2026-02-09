@@ -1,17 +1,17 @@
 # Assignment — Lab_Inmortals-Sync_Java21 (ARSW Lab #3)
 
-**Objetivo:** Practicar sincronización mínima, evitar deadlocks y suspensión cooperativa en un sistema de hilos tipo “inmortales”.
+**Objective:** Practice minimal synchronization, avoid deadlocks and cooperative suspension in an "immortals"-type thread system.
 
-## Pasos sugeridos
-1) Correr con `-Dfight=naive` y registrar problemas (salud negativa, inconsistencias).
-2) Corregir con **orden total** (o `tryLock(timeout)`) y comparar resultados.
-3) Implementar **Pausa/Reanudar** estable con `PauseController`.
-4) Implementar **Stop** ordenado (interrupciones + cierre de ejecutor).
-5) Hacer **thread-safe** el `ScoreBoard` (contadores/estadísticas).
-6) (Libre) Dining Philosophers: deadlock + solución.
+## Suggested steps
+1) Run with `-Dfight=naive` and record issues (negative health, inconsistencies).
+2) Fix with **total order** (or `tryLock(timeout)`) and compare results.
+3) Implement stable **Pause/Resume** with `PauseController`.
+4) Implement orderly **Stop** (interrupts + executor shutdown).
+5) Make `ScoreBoard` **thread-safe** (counters/statistics).
+6) (Optional) Dining Philosophers: deadlock + solution.
 
-## Entregables
-- Código Java 21, `RESPUESTAS.txt` con análisis y evidencia (thread dumps/capturas).
+## Deliverables
+- Java 21 code, `ANSWERS.txt` with analysis and evidence (thread dumps/screenshots).
 
-## Lectura
-Goetz et al., *Java Concurrency in Practice*, págs. **1–4** y **15–21**.
+## Reading
+Goetz et al., *Java Concurrency in Practice*, pages **1–4** and **15–21**.

@@ -1,103 +1,100 @@
+# ARSW — (Java 21): **Immortals & Synchronization** — with Swing UI
 
-# ARSW — (Java 21): **Immortals & Synchronization** — con UI Swing
-
-**Escuela Colombiana de Ingeniería – Arquitecturas de Software**  
-Laboratorio de concurrencia: condiciones de carrera, sincronización, suspensión cooperativa y *deadlocks*, con interfaz **Swing** tipo *Highlander Simulator*.
-
+**Colombian School of Engineering – Software Architectures**  
+Concurrency lab: race conditions, synchronization, cooperative suspension and *deadlocks*, with **Swing** interface (*Highlander Simulator* style).
 
 ---
 
-## Requisitos
+## Requirements
 
-- **JDK 21** (Temurin recomendado)
+- **JDK 21** (Temurin recommended)
 - **Maven 3.9+**
-- SO: Windows, macOS o Linux
+- OS: Windows, macOS or Linux
 
 ---
 
-## Cómo ejecutar
+## How to run
 
-### Interfaz gráfica (Swing) — *Highlander Simulator*
+### Graphical interface (Swing) — *Highlander Simulator*
 
-**Opción A (desde `Main`, modo `ui`)**
+**Option A (from `Main`, `ui` mode)**
 ```bash
 mvn -q -DskipTests exec:java -Dmode=ui -Dcount=8 -Dfight=ordered -Dhealth=100 -Ddamage=10
 ```
 
-**Opción B (clase de la UI directamente)**
+**Option B (UI class directly)**
 ```bash
 mvn -q -DskipTests exec:java   -Dexec.mainClass=edu.eci.arsw.highlandersim.ControlFrame   -Dcount=8 -Dfight=ordered -Dhealth=100 -Ddamage=10
 ```
 
-**Parámetros**  
-- `-Dcount=N` → número de inmortales (por defecto 8)  
-- `-Dfight=ordered|naive` → estrategia de pelea (`ordered` evita *deadlocks*, `naive` los puede provocar)  
-- `-Dhealth`, `-Ddamage` → salud inicial y daño por golpe
+**Parameters**
+- `-Dcount=N` → number of immortals (default 8)
+- `-Dfight=ordered|naive` → fight strategy (`ordered` avoids *deadlocks*, `naive` may cause them)
+- `-Dhealth`, `-Ddamage` → initial health and damage per hit
 
-### Demos teóricas (sin UI)
+### Theoretical demos (without UI)
 ```bash
-mvn -q -DskipTests exec:java -Dmode=demos -Ddemo=1  # 1 = Deadlock ingenuo
-mvn -q -DskipTests exec:java -Dmode=demos -Ddemo=2  # 2 = Orden total (sin deadlock)
-mvn -q -DskipTests exec:java -Dmode=demos -Ddemo=3  # 3 = tryLock + timeout (progreso)
+mvn -q -DskipTests exec:java -Dmode=demos -Ddemo=1  # 1 = Naive deadlock
+mvn -q -DskipTests exec:java -Dmode=demos -Ddemo=2  # 2 = Total order (no deadlock)
+mvn -q -DskipTests exec:java -Dmode=demos -Ddemo=3  # 3 = tryLock + timeout (progress)
 ```
 
 ---
 
-## Controles en la UI
+## UI Controls
 
-- **Start**: inicia una simulación con los parámetros elegidos.
-- **Pause & Check**: pausa **todos** los hilos y muestra salud por inmortal y **suma total** (invariante).
-- **Resume**: reanuda la simulación.
-- **Stop**: detiene ordenadamente.
+- **Start**: starts a simulation with the chosen parameters.
+- **Pause & Check**: pauses **all** threads and shows health per immortal and **total sum** (invariant).
+- **Resume**: resumes the simulation.
+- **Stop**: stops in an orderly manner.
 
-**Invariante**: con N jugadores y salud inicial H, la **suma total** de salud debe permanecer constante (salvo durante un update en curso). Usa **Pause & Check** para validarlo.
+**Invariant**: with N players and initial health H, the **total sum** of health must remain constant (except during an ongoing update). Use **Pause & Check** to validate it.
 
 ---
 
-## Arquitectura (carpetas)
+## Architecture (folders)
 
 ```
 edu.eci.arsw
 ├─ app/                 # Bootstrap (Main): modes ui|immortals|demos
-├─ highlandersim/       # UI Swing: ControlFrame (Start, Pause & Check, Resume, Stop)
-├─ immortals/           # Dominio: Immortal, ImmortalManager, ScoreBoard
+├─ highlandersim/       # Swing UI: ControlFrame (Start, Pause & Check, Resume, Stop)
+├─ immortals/           # Domain: Immortal, ImmortalManager, ScoreBoard
 ├─ concurrency/         # PauseController (Lock/Condition; paused(), awaitIfPaused())
 ├─ demos/               # DeadlockDemo, OrderedTransferDemo, TryLockTransferDemo
-└─ core/                # BankAccount, TransferService (para demos teóricas)
+└─ core/                # BankAccount, TransferService (for theoretical demos)
 ```
 
 ---
 
-# Actividades del laboratorio
+# Lab Activities
 
-## Parte I — (Antes de terminar la clase) `wait/notify`: Productor/Consumidor
-1. Ejecuta el programa de productor/consumidor y monitorea CPU con **jVisualVM**. ¿Por qué el consumo alto? ¿Qué clase lo causa?  
-2. Ajusta la implementación para **usar CPU eficientemente** cuando el **productor es lento** y el **consumidor es rápido**. Valida de nuevo con VisualVM.  
-3. Ahora **productor rápido** y **consumidor lento** con **límite de stock** (cola acotada): garantiza que el límite se respete **sin espera activa** y valida CPU con un stock pequeño.
+## Part I — (Before class ends) `wait/notify`: Producer/Consumer
+1. Run the producer/consumer program and monitor CPU with **jVisualVM**. Why the high consumption? Which class causes it?
+2. Adjust the implementation to **use CPU efficiently** when the **producer is slow** and the **consumer is fast**. Validate again with VisualVM.
+3. Now **fast producer** and **slow consumer** with **stock limit** (bounded queue): ensure the limit is respected **without busy-wait** and validate CPU with a small stock.
 
-> Nota: la Parte I se realiza en el repositorio dedicado https://github.com/DECSIS-ECI/Lab_busy_wait_vs_wait_notify — clona ese repo y realiza los ejercicios allí; contiene el código de productor/consumidor, variantes con busy-wait y las soluciones usando wait()/notify(), además de instrucciones para ejecutar y validar con jVisualVM.
+> Note: Part I is done in the dedicated repository https://github.com/DECSIS-ECI/Lab_busy_wait_vs_wait_notify — clone that repo and do the exercises there; it contains the producer/consumer code, busy-wait variants and solutions using wait()/notify(), plus instructions to run and validate with jVisualVM.
 
-
-> Usa monitores de Java: **`synchronized` + `wait()` + `notify/notifyAll()`**, evitando *busy-wait*.
-
----
-
-## Parte II — (Antes de terminar la clase) Búsqueda distribuida y condición de parada
-Reescribe el **buscador de listas negras** para que la búsqueda **se detenga tan pronto** el conjunto de hilos detecte el número de ocurrencias que definen si el host es confiable o no (`BLACK_LIST_ALARM_COUNT`). Debe:
-- **Finalizar anticipadamente** (no recorrer servidores restantes) y **retornar** el resultado.  
-- Garantizar **ausencia de condiciones de carrera** sobre el contador compartido.
-
-> Puedes usar `AtomicInteger` o sincronización mínima sobre la región crítica del contador.
+> Use Java monitors: **`synchronized` + `wait()` + `notify/notifyAll()`**, avoiding *busy-wait*.
 
 ---
 
-## Parte III — (Avance) Sincronización y *Deadlocks* con *Highlander Simulator*
-1. Revisa la simulación: N inmortales; cada uno **ataca** a otro. El que ataca **resta M** al contrincante y **suma M/2** a su propia vida.  
-2. **Invariante**: con N y salud inicial `H`, la suma total debería permanecer constante (salvo durante un update). Calcula ese valor y úsalo para validar.  
-3. Ejecuta la UI y prueba **“Pause & Check”**. ¿Se cumple el invariante? Explica.  
-4. **Pausa correcta**: asegura que **todos** los hilos queden pausados **antes** de leer/imprimir la salud; implementa **Resume** (ya disponible).  
-5. Haz *click* repetido y valida consistencia. ¿Se mantiene el invariante?  
-6. **Regiones críticas**: identifica y sincroniza las secciones de pelea para evitar carreras; si usas múltiples *locks*, anida con **orden consistente**:
+## Part II — (Before class ends) Distributed search and stop condition
+Rewrite the **blacklist searcher** so that the search **stops as soon as** the set of threads detects the number of occurrences that define whether the host is trustworthy or not (`BLACK_LIST_ALARM_COUNT`). It must:
+- **Terminate early** (not traverse remaining servers) and **return** the result.
+- Guarantee **absence of race conditions** on the shared counter.
+
+> You can use `AtomicInteger` or minimal synchronization over the critical section of the counter.
+
+---
+
+## Part III — (Progress) Synchronization and *Deadlocks* with *Highlander Simulator*
+1. Review the simulation: N immortals; each one **attacks** another. The attacker **subtracts M** from the opponent and **adds M/2** to their own life.
+2. **Invariant**: with N and initial health `H`, the total sum should remain constant (except during an update). Calculate that value and use it to validate.
+3. Run the UI and try **"Pause & Check"**. Is the invariant satisfied? Explain.
+4. **Correct pause**: ensure that **all** threads are paused **before** reading/printing health; implement **Resume** (already available).
+5. Do repeated *clicks* and validate consistency. Is the invariant maintained?
+6. **Critical sections**: identify and synchronize the fight sections to avoid races; if you use multiple *locks*, nest with **consistent order**:
    ```java
    synchronized (lockA) {
      synchronized (lockB) {
@@ -105,62 +102,62 @@ Reescribe el **buscador de listas negras** para que la búsqueda **se detenga ta
      }
    }
    ```
-7. Si la app se **detiene** (posible *deadlock*), usa **`jps`** y **`jstack`** para diagnosticar.  
-8. Aplica una **estrategia** para corregir el *deadlock* (p. ej., **orden total** por nombre/id, o **`tryLock(timeout)`** con reintentos y *backoff*).  
-9. Valida con **N=100, 1000 o 10000** inmortales. Si falla el invariante, revisa la pausa y las regiones críticas.  
-10. **Remover inmortales muertos** sin bloquear la simulación: analiza si crea una **condición de carrera** con muchos hilos y corrige **sin sincronización global** (colección concurrente o enfoque *lock-free*).  
-11. Implementa completamente **STOP** (apagado ordenado).
+7. If the app **freezes** (possible *deadlock*), use **`jps`** and **`jstack`** to diagnose.
+8. Apply a **strategy** to fix the *deadlock* (e.g., **total order** by name/id, or **`tryLock(timeout)`** with retries and *backoff*).
+9. Validate with **N=100, 1000 or 10000** immortals. If the invariant fails, review the pause and critical sections.
+10. **Remove dead immortals** without blocking the simulation: analyze if it creates a **race condition** with many threads and fix **without global synchronization** (concurrent collection or *lock-free* approach).
+11. Fully implement **STOP** (orderly shutdown).
 
 ---
 
-## Entregables
+## Deliverables
 
-1. **Código fuente** (Java 21) con la UI funcionando.  
-2. **`Informe de laboratorio en formato pdf`** con:
-   - Parte I: diagnóstico de CPU y cambios para eliminar espera activa.  
-   - Parte II: diseño de **parada temprana** y cómo evitas condiciones de carrera en el contador.  
-   - Parte III:  
-     - Regiones críticas y estrategia adoptada (**orden total** o **tryLock+timeout**).  
-     - Evidencia de *deadlock* (si ocurrió) con `jstack` y corrección aplicada.  
-     - Validación del **invariante** con **Pause & Check** (distintos N).  
-     - Estrategia para **remover inmortales muertos** sin sincronización global.
-3. Instrucciones de ejecución si cambias *defaults*.
-
----
-
-## Criterios de evaluación (10 pts)
-
-- (3) **Concurrencia correcta**: sin *data races*; sincronización bien localizada; no hay espera activa.  
-- (2) **Pausa/Reanudar**: consistencia del estado e invariante bajo **Pause & Check**.  
-- (2) **Robustez**: corre con N alto; sin `ConcurrentModificationException`, sin *deadlocks* no gestionados.  
-- (1.5) **Calidad**: arquitectura clara, nombres y comentarios; separación UI/lógica.  
-- (1.5) **Documentación**: **`RESPUESTAS.txt`** claro con evidencia (dumps/capturas) y justificación técnica.
+1. **Source code** (Java 21) with the UI working.
+2. **`Lab report in pdf format`** with:
+   - Part I: CPU diagnosis and changes to eliminate busy-wait.
+   - Part II: **early stop** design and how you avoid race conditions on the counter.
+   - Part III:
+     - Critical sections and adopted strategy (**total order** or **tryLock+timeout**).
+     - Evidence of *deadlock* (if it occurred) with `jstack` and applied fix.
+     - Validation of the **invariant** with **Pause & Check** (different N values).
+     - Strategy for **removing dead immortals** without global synchronization.
+3. Execution instructions if you change *defaults*.
 
 ---
 
-## Tips y configuración útil
+## Evaluation criteria (10 pts)
 
-- **Estrategias de pelea**:  
-  - `-Dfight=naive` → útil para **reproducir** carreras y *deadlocks*.  
-  - `-Dfight=ordered` → **evita** *deadlocks* (orden total por nombre/id).
-- **Pausa cooperativa**: usa `PauseController` (Lock/Condition), **sin** `suspend/resume/stop`.  
-- **Colecciones**: evita estructuras no seguras; prefiere inmutabilidad o colecciones concurrentes.  
-- **Diagnóstico**: `jps`, `jstack`, **jVisualVM**; revisa *thread dumps* cuando sospeches *deadlock*.  
-- **Virtual Threads**: favorecen esperar con bloqueo (no *busy-wait*); usa timeouts.
+- (3) **Correct concurrency**: no *data races*; well-localized synchronization; no busy-wait.
+- (2) **Pause/Resume**: state consistency and invariant under **Pause & Check**.
+- (2) **Robustness**: runs with high N; no `ConcurrentModificationException`, no unmanaged *deadlocks*.
+- (1.5) **Quality**: clear architecture, names and comments; UI/logic separation.
+- (1.5) **Documentation**: clear **`ANSWERS.txt`** with evidence (dumps/screenshots) and technical justification.
 
 ---
 
-## Cómo correr pruebas
+## Tips and useful configuration
+
+- **Fight strategies**:
+  - `-Dfight=naive` → useful to **reproduce** races and *deadlocks*.
+  - `-Dfight=ordered` → **avoids** *deadlocks* (total order by name/id).
+- **Cooperative pause**: use `PauseController` (Lock/Condition), **without** `suspend/resume/stop`.
+- **Collections**: avoid unsafe structures; prefer immutability or concurrent collections.
+- **Diagnostics**: `jps`, `jstack`, **jVisualVM**; review *thread dumps* when you suspect *deadlock*.
+- **Virtual Threads**: favor waiting with blocking (not *busy-wait*); use timeouts.
+
+---
+
+## How to run tests
 
 ```bash
 mvn clean verify
 ```
 
-Incluye compilación y pruebas JUnit.
+Includes compilation and JUnit tests.
 
 ---
 
-## Créditos y licencia
+## Credits and license
 
-Laboratorio basado en el enunciado histórico del curso (Highlander, Productor/Consumidor, Búsqueda distribuida), modernizado a **Java 21**.  
-<a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/88x31.png" /></a><br />Este contenido hace parte del curso Arquitecturas de Software (ECI) y está licenciado como <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/">Creative Commons Attribution-NonCommercial 4.0 International License</a>.
+Lab based on the historic course assignment (Highlander, Producer/Consumer, Distributed Search), modernized to **Java 21**.  
+<a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/88x31.png" /></a><br />This content is part of the Software Architectures course (ECI) and is licensed under <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/">Creative Commons Attribution-NonCommercial 4.0 International License</a>.
