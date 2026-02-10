@@ -77,6 +77,125 @@ edu.eci.arsw
 
 > Use Java monitors: **`synchronized` + `wait()` + `notify/notifyAll()`**, avoiding *busy-wait*.
 
+### Part I — Analysis and Answers
+
+#### 1. High CPU consumption diagnosis
+
+**Question:** *Why the high CPU consumption? Which class causes it?*
+
+**Answer:** The high CPU consumption is caused by the `BusySpinQueue` class which implements a **busy-wait** (spin-wait) pattern. Looking at the code:
+
+```java
+// BusySpinQueue.java - put method
+while (true) {
+    if (q.size() < capacity) {
+        q.addLast(item);
+        return;
+    }
+    Thread.onSpinWait();  // CPU keeps spinning!
+}
+
+// BusySpinQueue.java - take method
+while (true) {
+    T v = q.pollFirst();
+    if (v != null) return v;
+    Thread.onSpinWait();  // CPU keeps spinning!
+}
+```
+
+The thread **continuously checks** the condition in a tight loop without ever yielding CPU execution. Even `Thread.onSpinWait()` only provides a hint to the CPU but the thread remains active, consuming CPU cycles constantly.
+
+**Commands to reproduce the issue:**
+```bash
+# High CPU (busy-wait mode)
+mvn -q -DskipTests exec:java "-Dexec.mainClass=edu.eci.arsw.pc.PCApp -Dmode=spin -Dcapacity=4 -DprodDelayMs=50 -DconsDelayMs=1 -DdurationSec=30"
+```
+
+**Evidence:**
+
+![Spin mode - CPU Monitor](images/first_screenshot.png)
+*jVisualVM Monitor: High CPU usage with busy-wait (spin mode)*
+
+![Spin mode - Threads](images/second_screenshot.png)
+*jVisualVM Threads: Threads constantly in RUNNABLE state*
+
+#### 2. Efficient CPU usage with slow producer / fast consumer
+
+**Question:** *How to use CPU efficiently when the producer is slow and the consumer is fast?*
+
+**Answer:** The solution is implemented in `BoundedBuffer` using Java monitors (`synchronized` + `wait()`/`notifyAll()`):
+
+```java
+// BoundedBuffer.java - take method (consumer waits efficiently)
+public T take() throws InterruptedException {
+    synchronized (this) {
+        while (q.isEmpty()) {
+            this.wait();  // Releases lock and CPU - thread sleeps!
+        }
+        T v = q.removeFirst();
+        this.notifyAll();
+        return v;
+    }
+}
+```
+
+With `wait()`:
+- The consumer **releases the CPU** when the queue is empty
+- The thread enters **WAITING** state (not consuming CPU)
+- It wakes up **only** when `notifyAll()` is called by the producer
+
+**Commands to verify:**
+```bash
+# Efficient CPU (monitor mode) - slow producer, fast consumer
+mvn -q -DskipTests exec:java "-Dexec.mainClass=edu.eci.arsw.pc.PCApp -Dmode=monitor -Dcapacity=4 -DprodDelayMs=50 -DconsDelayMs=1 -DdurationSec=30"
+```
+
+**Evidence:**
+
+![Monitor mode - CPU](images/third_screenshot.png)
+*jVisualVM Monitor: Low CPU usage with monitors (wait/notify)*
+
+![Monitor mode - Threads](images/fourth-screenshot.png)
+*jVisualVM Threads: Threads in WAITING state when idle*
+
+#### 3. Fast producer / slow consumer with stock limit
+
+**Question:** *How to ensure the limit is respected without busy-wait?*
+
+**Answer:** The `BoundedBuffer` also handles this scenario correctly:
+
+```java
+// BoundedBuffer.java - put method (producer waits when full)
+public void put(T item) throws InterruptedException {
+    synchronized (this) {
+        while (q.size() == capacity) {
+            this.wait();  // Producer waits without CPU when queue is full
+        }
+        q.addLast(item);
+        this.notifyAll();  // Wake up consumers
+    }
+}
+```
+
+Key points:
+- The producer **blocks without consuming CPU** when queue reaches `capacity`
+- Uses `while` (not `if`) to handle spurious wakeups
+- `notifyAll()` ensures both producers and consumers can be awakened
+
+**Commands to verify:**
+```bash
+# Fast producer (0ms delay), slow consumer (100ms delay), small capacity (4)
+mvn -q -DskipTests exec:java "-Dexec.mainClass=edu.eci.arsw.pc.PCApp -Dmode=monitor -Dcapacity=4 -DprodDelayMs=0 -DconsDelayMs=100 -DdurationSec=30"
+```
+
+**Evidence:**
+
+![Fast producer - CPU](images/fifth_screenshot.png)
+*jVisualVM Monitor: Producer waits efficiently when queue is full*
+
+![Fast producer - Threads](images/sixth_screenshot.png)
+*jVisualVM Threads: Producer in WAITING state when bounded queue reaches capacity*
+
 ---
 
 ## Part II — (Before class ends) Distributed search and stop condition
