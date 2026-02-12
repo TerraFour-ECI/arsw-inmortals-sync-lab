@@ -236,6 +236,7 @@ In each iteration of an immortal thread (`run()` in `Immortal.java`), the thread
 - `ordered`: nested locking with a consistent global order (by immortal name), preventing circular wait and avoiding deadlock.
 
 
+---
 
 > 2. **Invariant**: with N and initial health `H`, the total sum should remain constant (except during an update). Calculate that value and use it to validate.
 
@@ -247,7 +248,7 @@ Parameters used in this run:
 - `M = 10`
 - Fight mode: `ordered`
 
-![Point2](images/imagen2.png)
+
 
 Initial total health:
 
@@ -278,29 +279,43 @@ $$
 S(k) = S_0 + k\Delta = 800 - 5k
 $$
 
-For `k = 146`:
+---
 
-$$
-S(146) = 800 - 5(146) = 70
-$$
+> 3. Run the UI and try **"Pause & Check"**. Is the invariant satisfied? Explain.
 
-Observed value in UI:
+The simulator was executed with the following parameters:
 
-- `Total Health = 70`
+- `count=8`
+- `health=100`
+- `damage=10`
+- `fight=ordered`
+
+![Point2](images/imagen2.png)
+
+After starting the simulation, the tester waited a few seconds and then pressed `Pause & Check`.
+
+Observed values in the captured run:
+
 - `Score (fights) = 146`
+- `Total Health = 70`
+
+Using the formula defined in Point 2 for the current implementation:
+
+- `S0 = N * H = 8 * 100 = 800`
+- `delta = -M + (M/2) = -10 + 5 = -5`
+- `S(k) = 800 - 5k`
+- `S(146) = 800 - 5(146) = 70`
+
+The observed value (`70`) matches the expected value for the implemented fight rule.
 
 ![Point2](images/imagen1.png)
 
-**Conclusion:**
+### Conclusion
 
-- The constant invariant (`Total Health = 800`) does not hold with the current fight rule.
-- The code-based invariant ($$S(k)=800-5k$$) matches the observed result.
+The validation with `Pause & Check` shows that the simulation is behaving consistently with the current code logic.  
+However, the total health is not constant because each fight reduces the global total by `M/2`.  
+For this reason, the constant invariant proposed in the statement (`N * H`) is not satisfied under the current rule (`-M` to defender and `+M/2` to attacker).
 
-
-
-
-
-> 3. Run the UI and try **"Pause & Check"**. Is the invariant satisfied? Explain.
 > 4. **Correct pause**: ensure that **all** threads are paused **before** reading/printing health; implement **Resume** (already available).
 > 5. Do repeated *clicks* and validate consistency. Is the invariant maintained?
 > 6. **Critical sections**: identify and synchronize the fight sections to avoid races; if you use multiple *locks*, nest with **consistent order**:
