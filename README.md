@@ -208,12 +208,40 @@ Rewrite the **blacklist searcher** so that the search **stops as soon as** the s
 ---
 
 ## Part III — (Progress) Synchronization and *Deadlocks* with *Highlander Simulator*
-1. Review the simulation: N immortals; each one **attacks** another. The attacker **subtracts M** from the opponent and **adds M/2** to their own life.
-2. **Invariant**: with N and initial health `H`, the total sum should remain constant (except during an update). Calculate that value and use it to validate.
-3. Run the UI and try **"Pause & Check"**. Is the invariant satisfied? Explain.
-4. **Correct pause**: ensure that **all** threads are paused **before** reading/printing health; implement **Resume** (already available).
-5. Do repeated *clicks* and validate consistency. Is the invariant maintained?
-6. **Critical sections**: identify and synchronize the fight sections to avoid races; if you use multiple *locks*, nest with **consistent order**:
+> 1. Review the simulation: N immortals; each one **attacks** another. The attacker **subtracts M** from the opponent and **adds M/2** to their own life.
+
+
+This simulation models `N` immortals running concurrently. Each immortal is represented by one thread and repeatedly attacks another immortal.
+
+- `N`: number of immortals in the population (`-Dcount`).
+- `H`: initial health of each immortal (`-Dhealth`).
+- `M`: damage per hit (`-Ddamage`).
+
+In each iteration of an immortal thread (`run()` in `Immortal.java`), the thread:
+
+1. Checks cooperative pause control (`awaitIfPaused()`).
+2. Chooses a random opponent different from itself.
+3. Executes a fight using the selected strategy (`naive` or `ordered`).
+4. Sleeps briefly to reduce aggressive spinning (`Thread.sleep(2)`).
+
+**Current fight rule:**
+
+- The attacker decreases opponent health by `M`.
+- The attacker increases its own health by `M/2`.
+- The update is applied only if both immortals are still alive (`health > 0`).
+
+**Fight strategy modes:**
+
+- `naive`: nested locking with `synchronized(this)` then `synchronized(other)`. This may deadlock if two threads lock in opposite order.
+- `ordered`: nested locking with a consistent global order (by immortal name), preventing circular wait and avoiding deadlock.
+
+
+
+> 2. **Invariant**: with N and initial health `H`, the total sum should remain constant (except during an update). Calculate that value and use it to validate.
+> 3. Run the UI and try **"Pause & Check"**. Is the invariant satisfied? Explain.
+> 4. **Correct pause**: ensure that **all** threads are paused **before** reading/printing health; implement **Resume** (already available).
+> 5. Do repeated *clicks* and validate consistency. Is the invariant maintained?
+> 6. **Critical sections**: identify and synchronize the fight sections to avoid races; if you use multiple *locks*, nest with **consistent order**:
    ```java
    synchronized (lockA) {
      synchronized (lockB) {
@@ -221,11 +249,11 @@ Rewrite the **blacklist searcher** so that the search **stops as soon as** the s
      }
    }
    ```
-7. If the app **freezes** (possible *deadlock*), use **`jps`** and **`jstack`** to diagnose.
-8. Apply a **strategy** to fix the *deadlock* (e.g., **total order** by name/id, or **`tryLock(timeout)`** with retries and *backoff*).
-9. Validate with **N=100, 1000 or 10000** immortals. If the invariant fails, review the pause and critical sections.
-10. **Remove dead immortals** without blocking the simulation: analyze if it creates a **race condition** with many threads and fix **without global synchronization** (concurrent collection or *lock-free* approach).
-11. Fully implement **STOP** (orderly shutdown).
+> 7. If the app **freezes** (possible *deadlock*), use **`jps`** and **`jstack`** to diagnose.
+> 8. Apply a **strategy** to fix the *deadlock* (e.g., **total order** by name/id, or **`tryLock(timeout)`** with retries and *backoff*).
+> 9. Validate with **N=100, 1000 or 10000** immortals. If the invariant fails, review the pause and critical sections.
+> 10. **Remove dead immortals** without blocking the simulation: analyze if it creates a **race condition** with many threads and fix **without global synchronization** (concurrent collection or *lock-free* approach).
+> 11. Fully implement **STOP** (orderly shutdown).
 
 ---
 
