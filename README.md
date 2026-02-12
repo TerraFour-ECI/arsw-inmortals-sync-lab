@@ -238,6 +238,68 @@ In each iteration of an immortal thread (`run()` in `Immortal.java`), the thread
 
 
 > 2. **Invariant**: with N and initial health `H`, the total sum should remain constant (except during an update). Calculate that value and use it to validate.
+
+
+Parameters used in this run:
+
+- `N = 8`
+- `H = 100`
+- `M = 10`
+- Fight mode: `ordered`
+
+![Point2](images/imagen2.png)
+
+Initial total health:
+
+$$
+S_0 = N \cdot H = 8 \cdot 100 = 800
+$$
+
+Constant invariant expected by the statement:
+
+$$
+S_{\text{const}} = 800
+$$
+
+Current implementation rule in `Immortal.java`:
+
+- defender: `-M`
+- attacker: `+M/2`
+
+So the total change per fight is:
+
+$$
+\Delta = -M + \frac{M}{2} = -10 + 5 = -5
+$$
+
+Therefore, after `k` fights:
+
+$$
+S(k) = S_0 + k\Delta = 800 - 5k
+$$
+
+For `k = 146`:
+
+$$
+S(146) = 800 - 5(146) = 70
+$$
+
+Observed value in UI:
+
+- `Total Health = 70`
+- `Score (fights) = 146`
+
+![Point2](images/imagen1.png)
+
+**Conclusion:**
+
+- The constant invariant (`Total Health = 800`) does not hold with the current fight rule.
+- The code-based invariant ($$S(k)=800-5k$$) matches the observed result.
+
+
+
+
+
 > 3. Run the UI and try **"Pause & Check"**. Is the invariant satisfied? Explain.
 > 4. **Correct pause**: ensure that **all** threads are paused **before** reading/printing health; implement **Resume** (already available).
 > 5. Do repeated *clicks* and validate consistency. Is the invariant maintained?
