@@ -298,42 +298,22 @@ MainCanodromo (orchestrator)
     ├── join() all 17 threads (waits for all to finish/break)
     └── read results: winner, total arrivals, stopped-early count
 ```
+#### How to Run
 
+```bash
+# With threshold=3: race stops after 3 arrivals
+mvn -q exec:java -Dexec.mainClass=edu.eci.arsw.dogsrace.app.MainCanodromo -Dthreshold=3
+
+# Default: no threshold (all greyhounds finish)
+mvn -q exec:java -Dexec.mainClass=edu.eci.arsw.dogsrace.app.MainCanodromo
+```
 #### Evidence of Execution
 
 **With threshold=3** (race stops after 3 arrivals):
-```
-Greyhound 13 arrived in position 1
-Greyhound 5 arrived in position 2
-Greyhound 2 arrived in position 3
-Greyhound 11 stopped early at step 95/100 (threshold reached)
-Greyhound 12 stopped early at step 98/100 (threshold reached)
-Greyhound 0 stopped early at step 98/100 (threshold reached)
-Greyhound 7 stopped early at step 99/100 (threshold reached)
-Greyhound 6 stopped early at step 94/100 (threshold reached)
-Greyhound 4 stopped early at step 93/100 (threshold reached)
-Greyhound 16 stopped early at step 98/100 (threshold reached)
-Greyhound 3 stopped early at step 99/100 (threshold reached)
-Greyhound 1 stopped early at step 97/100 (threshold reached)
-Greyhound 15 stopped early at step 99/100 (threshold reached)
-Greyhound 9 stopped early at step 91/100 (threshold reached)
-Greyhound 8 stopped early at step 94/100 (threshold reached)
-Greyhound 14 stopped early at step 97/100 (threshold reached)
-Greyhound 10 stopped early at step 95/100 (threshold reached)
-=== Early-stop active (threshold=3) ===
-  Arrivals: 3 / 17 runners
-  Stopped early: 14 greyhounds
-  Winner: 13
-```
+!["With threshold = 3"](/images/part2-first-execution.png)
 
 **Without threshold** (all 17 greyhounds finish):
-```
-Greyhound 9 arrived in position 1
-Greyhound 8 arrived in position 2
-...
-Greyhound 7 arrived in position 17
-The winner was: 9
-```
+!["With threshold = 3"](/images/part2-second-execution.png)
 
 #### Key Design Decisions
 
@@ -342,18 +322,7 @@ The winner was: 9
 3. **Check at top of loop** — one-line addition to `Galgo.corra()`, minimal and non-invasive.
 4. **Random step delay** — greyhounds now run at variable speed (50–150ms per step), ensuring some finish before others so the threshold can trigger while slower dogs are mid-track.
 
-#### How to Run
 
-```bash
-# With threshold=3: race stops after 3 arrivals
-mvn -q exec:java -Dexec.mainClass=edu.eci.arsw.dogsrace.app.MainCanodromo -Dthreshold=3
-
-# With threshold=1: only the winner finishes
-mvn -q exec:java -Dexec.mainClass=edu.eci.arsw.dogsrace.app.MainCanodromo -Dthreshold=1
-
-# Default: no threshold (all greyhounds finish)
-mvn -q exec:java -Dexec.mainClass=edu.eci.arsw.dogsrace.app.MainCanodromo
-```
 
 ---
 
