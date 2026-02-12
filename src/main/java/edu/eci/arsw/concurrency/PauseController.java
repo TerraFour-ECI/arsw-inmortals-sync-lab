@@ -24,8 +24,7 @@ public final class PauseController {
   public void resume() { 
     lock.lock(); 
     try { 
-      paused = false; 
-      waitingThreads = 0;  
+      paused = false;   
       unpaused.signalAll(); 
     } finally { 
       lock.unlock(); 

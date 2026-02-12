@@ -316,8 +316,75 @@ The validation with `Pause & Check` shows that the simulation is behaving consis
 However, the total health is not constant because each fight reduces the global total by `M/2`.  
 For this reason, the constant invariant proposed in the statement (`N * H`) is not satisfied under the current rule (`-M` to defender and `+M/2` to attacker).
 
+---
+
 > 4. **Correct pause**: ensure that **all** threads are paused **before** reading/printing health; implement **Resume** (already available).
+
+Implemented a **synchronization barrier pattern** in `PauseController` to ensure all threads are paused before reading values.
+
+### Changes made
+* **PauseController:** Added thread tracking with `activeThreads` and `waitingThreads` counters. Added `waitUntilAllPaused()` method that blocks the UI thread until all immortal threads confirm they've reached `awaitIfPaused()`.
+* **Immortal:** Modified `run()` to call `controller.registerThread()` at startup and `controller.unregisterThread()` in the `finally` block. This keeps the controller aware of how many threads are active.
+* **ControlFrame.onPauseAndCheck:** Now calls `manager.controller().waitUntilAllPaused()` after `manager.pause()` and before reading health values. This guarantees all threads are blocked before inspection.
+
+### How it works
+1. When "Pause & Check" is clicked, the UI thread blocks on a condition variable.
+2. Each immortal thread increments a counter when reaching `awaitIfPaused()`.
+3. When the last thread arrives (`waitingThreads == activeThreads`), it signals the UI thread.
+4. Only then does the UI read health values, ensuring consistency.
+
+
 > 5. Do repeated *clicks* and validate consistency. Is the invariant maintained?
+
+### Validation with Multiple Pauses
+
+The simulation was tested with repeated **Pause & Check** operations to validate consistency across pause/resume cycles.
+
+**Test configuration:**
+- `count=8`
+- `health=1000`
+- `damage=5`
+- `fight=ordered`
+
+For the current implementation:
+- `S0 = N * H = 8 * 1000 = 8000`
+- `delta = -M + (M/2) = -5 + 2 = -3` 
+- `S(k) = 8000 - 3k`
+
+**Results from multiple pause operations:**
+
+| Pause # | Score (fights) `k` | Total Health (observed) | Expected `S(k)` | Match? |
+|---------|---------------------|--------------------------|------------------|--------|
+| 1       | 1712                | 2864                     | `8000-3(1712)=2864` | ✓ |
+| 2       | 2575                | 275                      | `8000-3(2575)=275`  | ✓ |
+| 3       | 2648                | 56                       | `8000-3(2648)=56`   | ✓ |
+
+**Evidence:**
+
+![Multiple pauses - Test 1](images/test1.png)
+*Pause with `k=2648`, observed total `56`.*
+
+![Multiple pauses - Test 2](images/test2.png)
+*Pause with `k=1712`, observed total `2864`.*
+
+![Multiple pauses - Test 3](images/test3.png)
+*Pause with `k=2575`, observed total `275`.*
+
+### Observations
+
+1. Repeated **Pause & Check** snapshots are consistent (no partial updates were observed).
+2. Observed totals match `S(k) = 8000 - 3k` exactly in all sampled pauses.
+3. The pause barrier introduced in Point 4 is working for state inspection consistency.
+
+### Conclusion
+
+For this code version, the **constant invariant** (`Total Health = N*H`) is **not** maintained.  
+However, the **implementation-based invariant** (`S(k)=8000-3k`) is maintained across repeated pause/resume cycles.  
+This confirms correct synchronization during inspection, even though the fight rule itself changes total health over time.
+
+---
+
+
 > 6. **Critical sections**: identify and synchronize the fight sections to avoid races; if you use multiple *locks*, nest with **consistent order**:
    ```java
    synchronized (lockA) {
