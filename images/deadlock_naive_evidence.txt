@@ -1,0 +1,181 @@
+2026-02-12 16:52:46
+Full thread dump Java HotSpot(TM) 64-Bit Server VM (21.0.7+8-LTS-245 mixed mode, sharing):
+
+Threads class SMR info:
+_java_thread_list=0x000001f2a1c0f770, length=13, elements={
+0x000001f2fa7a0570, 0x000001f2ff94cea0, 0x000001f2ff94d8f0, 0x000001f2ff9507d0,
+0x000001f2ff951a40, 0x000001f2ff952580, 0x000001f2ff9530c0, 0x000001f2ff957030,
+0x000001f2ff957bf0, 0x000001f2a1bf5a20, 0x000001f2a1c12290, 0x000001f2a1c1cc20,
+0x000001f2a1c1d280
+}
+
+"main" #1 [25904] prio=5 os_prio=0 cpu=31.25ms elapsed=14757.62s tid=0x000001f2fa7a0570 nid=25904 waiting on condition  [0x0000005cce5fe000]
+   java.lang.Thread.State: TIMED_WAITING (parking)
+	at jdk.internal.misc.Unsafe.park(java.base@21.0.7/Native Method)
+	- parking to wait for  <0x000000062d283370> (a java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject)
+	at java.util.concurrent.locks.LockSupport.parkNanos(java.base@21.0.7/LockSupport.java:269)
+	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(java.base@21.0.7/AbstractQueuedSynchronizer.java:1763)
+	at java.util.concurrent.ThreadPoolExecutor.awaitTermination(java.base@21.0.7/ThreadPoolExecutor.java:1475)
+	at java.util.concurrent.ExecutorService.close(java.base@21.0.7/ExecutorService.java:417)
+	at edu.eci.arsw.demos.DeadlockDemo.run(DeadlockDemo.java:17)
+	at edu.eci.arsw.app.Main.main(Main.java:15)
+
+"Reference Handler" #9 [25844] daemon prio=10 os_prio=2 cpu=0.00ms elapsed=14757.61s tid=0x000001f2ff94cea0 nid=25844 waiting on condition  [0x0000005ccedff000]
+   java.lang.Thread.State: RUNNABLE
+	at java.lang.ref.Reference.waitForReferencePendingList(java.base@21.0.7/Native Method)
+	at java.lang.ref.Reference.processPendingReferences(java.base@21.0.7/Reference.java:246)
+	at java.lang.ref.Reference$ReferenceHandler.run(java.base@21.0.7/Reference.java:208)
+
+"Finalizer" #10 [25872] daemon prio=8 os_prio=1 cpu=0.00ms elapsed=14757.61s tid=0x000001f2ff94d8f0 nid=25872 in Object.wait()  [0x0000005cceefe000]
+   java.lang.Thread.State: WAITING (on object monitor)
+	at java.lang.Object.wait0(java.base@21.0.7/Native Method)
+	- waiting on <0x000000062d00c2e8> (a java.lang.ref.NativeReferenceQueue$Lock)
+	at java.lang.Object.wait(java.base@21.0.7/Object.java:366)
+	at java.lang.Object.wait(java.base@21.0.7/Object.java:339)
+	at java.lang.ref.NativeReferenceQueue.await(java.base@21.0.7/NativeReferenceQueue.java:48)
+	at java.lang.ref.ReferenceQueue.remove0(java.base@21.0.7/ReferenceQueue.java:158)
+	at java.lang.ref.NativeReferenceQueue.remove(java.base@21.0.7/NativeReferenceQueue.java:89)
+	- locked <0x000000062d00c2e8> (a java.lang.ref.NativeReferenceQueue$Lock)
+	at java.lang.ref.Finalizer$FinalizerThread.run(java.base@21.0.7/Finalizer.java:173)
+
+"Signal Dispatcher" #11 [25868] daemon prio=9 os_prio=2 cpu=0.00ms elapsed=14757.61s tid=0x000001f2ff9507d0 nid=25868 waiting on condition  [0x0000000000000000]
+   java.lang.Thread.State: RUNNABLE
+
+"Attach Listener" #12 [25864] daemon prio=5 os_prio=2 cpu=0.00ms elapsed=14757.61s tid=0x000001f2ff951a40 nid=25864 waiting on condition  [0x0000000000000000]
+   java.lang.Thread.State: RUNNABLE
+
+"Service Thread" #13 [25848] daemon prio=9 os_prio=0 cpu=0.00ms elapsed=14757.61s tid=0x000001f2ff952580 nid=25848 runnable  [0x0000000000000000]
+   java.lang.Thread.State: RUNNABLE
+
+"Monitor Deflation Thread" #14 [25840] daemon prio=9 os_prio=0 cpu=1265.62ms elapsed=14757.61s tid=0x000001f2ff9530c0 nid=25840 runnable  [0x0000000000000000]
+   java.lang.Thread.State: RUNNABLE
+
+"C2 CompilerThread0" #15 [25944] daemon prio=9 os_prio=2 cpu=78.12ms elapsed=14757.61s tid=0x000001f2ff957030 nid=25944 waiting on condition  [0x0000000000000000]
+   java.lang.Thread.State: RUNNABLE
+   No compile task
+
+"C1 CompilerThread0" #23 [25940] daemon prio=9 os_prio=2 cpu=140.62ms elapsed=14757.61s tid=0x000001f2ff957bf0 nid=25940 waiting on condition  [0x0000000000000000]
+   java.lang.Thread.State: RUNNABLE
+   No compile task
+
+"Notification Thread" #27 [25952] daemon prio=9 os_prio=0 cpu=0.00ms elapsed=14757.60s tid=0x000001f2a1bf5a20 nid=25952 runnable  [0x0000000000000000]
+   java.lang.Thread.State: RUNNABLE
+
+"Common-Cleaner" #28 [25948] daemon prio=8 os_prio=1 cpu=31.25ms elapsed=14757.60s tid=0x000001f2a1c12290 nid=25948 waiting on condition  [0x0000005ccf7ff000]
+   java.lang.Thread.State: TIMED_WAITING (parking)
+	at jdk.internal.misc.Unsafe.park(java.base@21.0.7/Native Method)
+	- parking to wait for  <0x000000062d27c9e8> (a java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject)
+	at java.util.concurrent.locks.LockSupport.parkNanos(java.base@21.0.7/LockSupport.java:269)
+	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(java.base@21.0.7/AbstractQueuedSynchronizer.java:1852)
+	at java.lang.ref.ReferenceQueue.await(java.base@21.0.7/ReferenceQueue.java:71)
+	at java.lang.ref.ReferenceQueue.remove0(java.base@21.0.7/ReferenceQueue.java:143)
+	at java.lang.ref.ReferenceQueue.remove(java.base@21.0.7/ReferenceQueue.java:218)
+	at jdk.internal.ref.CleanerImpl.run(java.base@21.0.7/CleanerImpl.java:140)
+	at java.lang.Thread.runWith(java.base@21.0.7/Thread.java:1596)
+	at java.lang.Thread.run(java.base@21.0.7/Thread.java:1583)
+	at jdk.internal.misc.InnocuousThread.run(java.base@21.0.7/InnocuousThread.java:186)
+
+"pool-1-thread-1" #29 [25936] prio=5 os_prio=0 cpu=0.00ms elapsed=14757.59s tid=0x000001f2a1c1cc20 nid=25936 waiting on condition  [0x0000005ccf8fe000]
+   java.lang.Thread.State: WAITING (parking)
+	at jdk.internal.misc.Unsafe.park(java.base@21.0.7/Native Method)
+	- parking to wait for  <0x000000062d2827f0> (a java.util.concurrent.locks.ReentrantLock$NonfairSync)
+	at java.util.concurrent.locks.LockSupport.park(java.base@21.0.7/LockSupport.java:221)
+	at java.util.concurrent.locks.AbstractQueuedSynchronizer.acquire(java.base@21.0.7/AbstractQueuedSynchronizer.java:754)
+	at java.util.concurrent.locks.AbstractQueuedSynchronizer.acquire(java.base@21.0.7/AbstractQueuedSynchronizer.java:990)
+	at java.util.concurrent.locks.ReentrantLock$Sync.lock(java.base@21.0.7/ReentrantLock.java:153)
+	at java.util.concurrent.locks.ReentrantLock.lock(java.base@21.0.7/ReentrantLock.java:322)
+	at edu.eci.arsw.core.TransferService.transferNaive(TransferService.java:16)
+	at edu.eci.arsw.demos.DeadlockDemo.lambda$run$0(DeadlockDemo.java:13)
+	at edu.eci.arsw.demos.DeadlockDemo$$Lambda/0x000001f2a3001000.run(Unknown Source)
+	at java.util.concurrent.Executors$RunnableAdapter.call(java.base@21.0.7/Executors.java:572)
+	at java.util.concurrent.FutureTask.run(java.base@21.0.7/FutureTask.java:317)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(java.base@21.0.7/ThreadPoolExecutor.java:1144)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(java.base@21.0.7/ThreadPoolExecutor.java:642)
+	at java.lang.Thread.runWith(java.base@21.0.7/Thread.java:1596)
+	at java.lang.Thread.run(java.base@21.0.7/Thread.java:1583)
+
+"pool-1-thread-2" #30 [26040] prio=5 os_prio=0 cpu=0.00ms elapsed=14757.59s tid=0x000001f2a1c1d280 nid=26040 waiting on condition  [0x0000005ccf9fe000]
+   java.lang.Thread.State: WAITING (parking)
+	at jdk.internal.misc.Unsafe.park(java.base@21.0.7/Native Method)
+	- parking to wait for  <0x000000062d2827a0> (a java.util.concurrent.locks.ReentrantLock$NonfairSync)
+	at java.util.concurrent.locks.LockSupport.park(java.base@21.0.7/LockSupport.java:221)
+	at java.util.concurrent.locks.AbstractQueuedSynchronizer.acquire(java.base@21.0.7/AbstractQueuedSynchronizer.java:754)
+	at java.util.concurrent.locks.AbstractQueuedSynchronizer.acquire(java.base@21.0.7/AbstractQueuedSynchronizer.java:990)
+	at java.util.concurrent.locks.ReentrantLock$Sync.lock(java.base@21.0.7/ReentrantLock.java:153)
+	at java.util.concurrent.locks.ReentrantLock.lock(java.base@21.0.7/ReentrantLock.java:322)
+	at edu.eci.arsw.core.TransferService.transferNaive(TransferService.java:16)
+	at edu.eci.arsw.demos.DeadlockDemo.lambda$run$1(DeadlockDemo.java:14)
+	at edu.eci.arsw.demos.DeadlockDemo$$Lambda/0x000001f2a3001218.run(Unknown Source)
+	at java.util.concurrent.Executors$RunnableAdapter.call(java.base@21.0.7/Executors.java:572)
+	at java.util.concurrent.FutureTask.run(java.base@21.0.7/FutureTask.java:317)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(java.base@21.0.7/ThreadPoolExecutor.java:1144)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(java.base@21.0.7/ThreadPoolExecutor.java:642)
+	at java.lang.Thread.runWith(java.base@21.0.7/Thread.java:1596)
+	at java.lang.Thread.run(java.base@21.0.7/Thread.java:1583)
+
+"VM Thread" os_prio=2 cpu=515.62ms elapsed=14757.61s tid=0x000001f2ff92e9d0 nid=25888 runnable  
+
+"VM Periodic Task Thread" os_prio=2 cpu=9375.00ms elapsed=14757.62s tid=0x000001f2ff91bbb0 nid=25892 waiting on condition  
+
+"G1 Service" os_prio=2 cpu=625.00ms elapsed=14757.62s tid=0x000001f2ff86e050 nid=25876 runnable  
+
+"G1 Refine#0" os_prio=2 cpu=0.00ms elapsed=14757.62s tid=0x000001f2ff86d640 nid=25880 runnable  
+
+"G1 Conc#0" os_prio=2 cpu=0.00ms elapsed=14757.62s tid=0x000001f2fcc89700 nid=25884 runnable  
+
+"G1 Main Marker" os_prio=2 cpu=0.00ms elapsed=14757.62s tid=0x000001f2ff7b2010 nid=25896 runnable  
+
+"GC Thread#0" os_prio=2 cpu=0.00ms elapsed=14757.62s tid=0x000001f2fcc7b4f0 nid=25900 runnable  
+
+JNI global refs: 13, weak refs: 0
+
+
+Found one Java-level deadlock:
+=============================
+"pool-1-thread-1":
+  waiting for ownable synchronizer 0x000000062d2827f0, (a java.util.concurrent.locks.ReentrantLock$NonfairSync),
+  which is held by "pool-1-thread-2"
+
+"pool-1-thread-2":
+  waiting for ownable synchronizer 0x000000062d2827a0, (a java.util.concurrent.locks.ReentrantLock$NonfairSync),
+  which is held by "pool-1-thread-1"
+
+Java stack information for the threads listed above:
+===================================================
+"pool-1-thread-1":
+	at jdk.internal.misc.Unsafe.park(java.base@21.0.7/Native Method)
+	- parking to wait for  <0x000000062d2827f0> (a java.util.concurrent.locks.ReentrantLock$NonfairSync)
+	at java.util.concurrent.locks.LockSupport.park(java.base@21.0.7/LockSupport.java:221)
+	at java.util.concurrent.locks.AbstractQueuedSynchronizer.acquire(java.base@21.0.7/AbstractQueuedSynchronizer.java:754)
+	at java.util.concurrent.locks.AbstractQueuedSynchronizer.acquire(java.base@21.0.7/AbstractQueuedSynchronizer.java:990)
+	at java.util.concurrent.locks.ReentrantLock$Sync.lock(java.base@21.0.7/ReentrantLock.java:153)
+	at java.util.concurrent.locks.ReentrantLock.lock(java.base@21.0.7/ReentrantLock.java:322)
+	at edu.eci.arsw.core.TransferService.transferNaive(TransferService.java:16)
+	at edu.eci.arsw.demos.DeadlockDemo.lambda$run$0(DeadlockDemo.java:13)
+	at edu.eci.arsw.demos.DeadlockDemo$$Lambda/0x000001f2a3001000.run(Unknown Source)
+	at java.util.concurrent.Executors$RunnableAdapter.call(java.base@21.0.7/Executors.java:572)
+	at java.util.concurrent.FutureTask.run(java.base@21.0.7/FutureTask.java:317)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(java.base@21.0.7/ThreadPoolExecutor.java:1144)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(java.base@21.0.7/ThreadPoolExecutor.java:642)
+	at java.lang.Thread.runWith(java.base@21.0.7/Thread.java:1596)
+	at java.lang.Thread.run(java.base@21.0.7/Thread.java:1583)
+"pool-1-thread-2":
+	at jdk.internal.misc.Unsafe.park(java.base@21.0.7/Native Method)
+	- parking to wait for  <0x000000062d2827a0> (a java.util.concurrent.locks.ReentrantLock$NonfairSync)
+	at java.util.concurrent.locks.LockSupport.park(java.base@21.0.7/LockSupport.java:221)
+	at java.util.concurrent.locks.AbstractQueuedSynchronizer.acquire(java.base@21.0.7/AbstractQueuedSynchronizer.java:754)
+	at java.util.concurrent.locks.AbstractQueuedSynchronizer.acquire(java.base@21.0.7/AbstractQueuedSynchronizer.java:990)
+	at java.util.concurrent.locks.ReentrantLock$Sync.lock(java.base@21.0.7/ReentrantLock.java:153)
+	at java.util.concurrent.locks.ReentrantLock.lock(java.base@21.0.7/ReentrantLock.java:322)
+	at edu.eci.arsw.core.TransferService.transferNaive(TransferService.java:16)
+	at edu.eci.arsw.demos.DeadlockDemo.lambda$run$1(DeadlockDemo.java:14)
+	at edu.eci.arsw.demos.DeadlockDemo$$Lambda/0x000001f2a3001218.run(Unknown Source)
+	at java.util.concurrent.Executors$RunnableAdapter.call(java.base@21.0.7/Executors.java:572)
+	at java.util.concurrent.FutureTask.run(java.base@21.0.7/FutureTask.java:317)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(java.base@21.0.7/ThreadPoolExecutor.java:1144)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(java.base@21.0.7/ThreadPoolExecutor.java:642)
+	at java.lang.Thread.runWith(java.base@21.0.7/Thread.java:1596)
+	at java.lang.Thread.run(java.base@21.0.7/Thread.java:1583)
+
+Found 1 deadlock.
+

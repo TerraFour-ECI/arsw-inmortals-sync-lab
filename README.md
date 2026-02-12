@@ -394,9 +394,129 @@ This confirms correct synchronization during inspection, even though the fight r
    }
    ```
 > 7. If the app **freezes** (possible *deadlock*), use **`jps`** and **`jstack`** to diagnose.
+
+### Critical Sections Identified
+
+The main **critical section** in the simulator is the **fight operation** where two immortals simultaneously modify each other's health:
+
+```java
+other.health -= this.damage;      // Write to shared variable
+this.health += this.damage / 2;   // Write to shared variable
+scoreBoard.recordFight();         // Update shared counter
+```
+
+Two threads fighting concurrently can cause:
+- **Race conditions**: partial updates visible to other threads
+- **Data corruption**: health values become inconsistent
+- **Deadlocks**: circular wait when acquiring multiple locks
+
+---
+### Two Fight Strategies
+
+#### Strategy 1: Naive (CAUSES DEADLOCK)
+
+```java
+private void fightNaive(Immortal other) {
+    synchronized (this) {           
+      synchronized (other) {        
+        if (this.health <= 0 || other.health <= 0) return;
+        other.health -= this.damage;
+        this.health += this.damage / 2;
+        scoreBoard.recordFight();
+      }
+    }
+}
+```
+
+**The Problem:**
+
+```
+Thread A (Immortal-5 vs 3):   Thread B (Immortal-3 vs 5):
+  Lock(5) ✓                     Lock(3) ✓
+  wants(3) ❌                   wants(5) ❌
+  DEADLOCK
+```
+
+**Test result:**
+```bash
+mvn -q -DskipTests exec:java -Dmode=ui -Dcount=12 -Dfight=naive -Dhealth=100 -Ddamage=10
+```
+
+**Observed Behavior:**
+- UI starts and shows immortals fighting
+- After ~5-10 seconds: **UI freezes completely**
+- Buttons become unresponsive
+- Simulation stops progressing
+
+![UI frozen - Naive mode](images/UInaive.png)
+
+**jstack output confirms deadlock:**
+
+![Deadlock evidence](images/naive.png)
+
+---
+
+#### Strategy 2: Ordered (PREVENTS DEADLOCK)
+
+```java
+private void fightOrdered(Immortal other) {
+    // Establish global order by name (alphabetically)
+    Immortal first = this.name.compareTo(other.name) < 0 ? this : other;
+    Immortal second = this.name.compareTo(other.name) < 0 ? other : this;
+    
+    synchronized (first) {            // Always lock lower name first
+      synchronized (second) {         // Then lock higher name
+        if (this.health <= 0 || other.health <= 0) return;
+        other.health -= this.damage;
+        this.health += this.damage / 2;
+        scoreBoard.recordFight();
+      }
+    }
+}
+```
+
+**Test result:**
+```bash
+mvn -q -DskipTests exec:java -Dmode=ui -Dcount=100 -Dfight=ordered -Dhealth=1000 -Ddamage=10
+```
+
+![UI responsive - Ordered mode](images/UIordered.png)
+
+**Observed Behavior:**
+- UI remains **responsive** throughout
+- Buttons work normally (Start, Pause & Check, Resume, Stop)
+- Simulation runs for hours without freezing
+- Health values decrease consistently per the formula `S(k) = 8000 - 3k`
+
+**jstack output shows no deadlock:**
+
+![No deadlock evidence](images/ordered.png)
+
+---
+
+### Lock Ordering Comparison
+
+| Aspect | Naive | Ordered |
+|--------|-------|---------|
+| **Lock sequence** | `this` → `other` | Alphabetical sort first |
+| **Lock order same for all threads?** |  NO (inconsistent) |  YES (global total order) |
+| **Circular wait possible?** |  YES |  NO |
+| **Deadlock risk** | **HIGH** (verified) | **NONE** |
+| **Max N before failure** | ~12 | 100,000+ |
+| **Reason for failure** | Inconsistent ordering | Consistent global order |
+
+
+
+---
+
 > 8. Apply a **strategy** to fix the *deadlock* (e.g., **total order** by name/id, or **`tryLock(timeout)`** with retries and *backoff*).
+
 > 9. Validate with **N=100, 1000 or 10000** immortals. If the invariant fails, review the pause and critical sections.
+
+
 > 10. **Remove dead immortals** without blocking the simulation: analyze if it creates a **race condition** with many threads and fix **without global synchronization** (concurrent collection or *lock-free* approach).
+
+
 > 11. Fully implement **STOP** (orderly shutdown).
 
 ---
