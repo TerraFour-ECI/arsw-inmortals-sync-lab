@@ -30,6 +30,7 @@ public final class Immortal implements Runnable {
   public void stop() { running = false; }
 
   @Override public void run() {
+    controller.registerThread();
     try {
       while (running) {
         controller.awaitIfPaused();
@@ -43,6 +44,8 @@ public final class Immortal implements Runnable {
       }
     } catch (InterruptedException ie) {
       Thread.currentThread().interrupt();
+    } finally {
+      controller.unregisterThread();
     }
   }
 
