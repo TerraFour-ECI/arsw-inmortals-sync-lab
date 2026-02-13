@@ -51,7 +51,7 @@ public final class Immortal implements Runnable {
   public void run() {
     controller.registerThread();
     try {
-      while (running) {
+      while (running && isAlive()) {
         controller.awaitIfPaused();
         if (!running) break;
         var opponent = pickOpponent();
@@ -62,6 +62,9 @@ public final class Immortal implements Runnable {
         else fightOrdered(opponent);
         Thread.sleep(2);
       }
+      if (!isAlive()) {
+        population.remove(this);
+      }
     } catch (InterruptedException ie) {
       Thread.currentThread().interrupt();
     } finally {
@@ -71,11 +74,13 @@ public final class Immortal implements Runnable {
 
   private Immortal pickOpponent() {
     if (population.size() <= 1) return null;
-    Immortal other;
-    do {
-      other = population.get(ThreadLocalRandom.current().nextInt(population.size()));
-    } while (other == this);
-    return other;
+    for (int attempts = 0; attempts < 10; attempts++) {
+      Immortal other = population.get(ThreadLocalRandom.current().nextInt(population.size()));
+      if (other != this && other.isAlive()) {
+        return other;
+      }
+    }
+    return null;
   }
 
   private void fightNaive(Immortal other) {
@@ -123,7 +128,7 @@ public final class Immortal implements Runnable {
           try {
             if (other.lock.tryLock(10, TimeUnit.MILLISECONDS)) {
               try {
-                if (this.health <= 0 || other.health <= 0) return; // Both locks acquired; fight
+                if (this.health <= 0 || other.health <= 0) return; // Both locks acquired then fight
                 other.health -= this.damage;
                 this.health += this.damage / 2;
                 scoreBoard.recordFight();
@@ -132,7 +137,6 @@ public final class Immortal implements Runnable {
                 other.lock.unlock();
               }
             }
-            // release first and retry
           } finally {
             this.lock.unlock();
           }
