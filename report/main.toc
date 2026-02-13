@@ -1,0 +1,47 @@
+\babel@toc {english}{}\relax 
+\contentsline {section}{\numberline {1}Objective}{3}{section.1}%
+\contentsline {section}{\numberline {2}Problem Description}{3}{section.2}%
+\contentsline {subsection}{\numberline {2.1}Application Architecture}{3}{subsection.2.1}%
+\contentsline {section}{\numberline {3}Theoretical Framework}{3}{section.3}%
+\contentsline {subsection}{\numberline {3.1}Busy-Wait vs Wait/Notify}{3}{subsection.3.1}%
+\contentsline {subsection}{\numberline {3.2}Deadlock Conditions}{3}{subsection.3.2}%
+\contentsline {subsection}{\numberline {3.3}Deadlock Prevention Strategies}{3}{subsection.3.3}%
+\contentsline {section}{\numberline {4}Part I: Producer/Consumer}{4}{section.4}%
+\contentsline {subsection}{\numberline {4.1}Problem: High CPU Consumption}{4}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}Evidence of High CPU Usage}{4}{subsection.4.2}%
+\contentsline {subsection}{\numberline {4.3}Solution: BoundedBuffer with Monitors}{4}{subsection.4.3}%
+\contentsline {subsection}{\numberline {4.4}Evidence of Efficient CPU Usage}{4}{subsection.4.4}%
+\contentsline {subsection}{\numberline {4.5}Fast Producer / Slow Consumer}{4}{subsection.4.5}%
+\contentsline {section}{\numberline {5}Part II: Distributed Search}{5}{section.5}%
+\contentsline {subsection}{\numberline {5.1}Early Stop Implementation}{5}{subsection.5.1}%
+\contentsline {subsection}{\numberline {5.2}AtomicInteger for Race-Free Counting}{5}{subsection.5.2}%
+\contentsline {subsection}{\numberline {5.3}Early Stop Check}{5}{subsection.5.3}%
+\contentsline {subsection}{\numberline {5.4}Evidence of Early Stop}{5}{subsection.5.4}%
+\contentsline {section}{\numberline {6}Part III: Immortals Simulation}{5}{section.6}%
+\contentsline {subsection}{\numberline {6.1}Simulation Overview}{5}{subsection.6.1}%
+\contentsline {subsection}{\numberline {6.2}Invariant Calculation}{5}{subsection.6.2}%
+\contentsline {subsection}{\numberline {6.3}Pause \& Check Validation}{6}{subsection.6.3}%
+\contentsline {subsection}{\numberline {6.4}Multiple Pause Validation}{6}{subsection.6.4}%
+\contentsline {section}{\numberline {7}Deadlock Analysis}{6}{section.7}%
+\contentsline {subsection}{\numberline {7.1}Critical Sections Identified}{6}{subsection.7.1}%
+\contentsline {subsection}{\numberline {7.2}Naive Strategy (Causes Deadlock)}{6}{subsection.7.2}%
+\contentsline {subsection}{\numberline {7.3}Ordered Strategy (No Deadlock)}{7}{subsection.7.3}%
+\contentsline {subsection}{\numberline {7.4}TryLock with Exponential Backoff}{7}{subsection.7.4}%
+\contentsline {subsection}{\numberline {7.5}Strategy Comparison}{7}{subsection.7.5}%
+\contentsline {section}{\numberline {8}High N Validation}{7}{section.8}%
+\contentsline {subsection}{\numberline {8.1}N=100 Results}{7}{subsection.8.1}%
+\contentsline {subsection}{\numberline {8.2}N=1000 Results}{8}{subsection.8.2}%
+\contentsline {subsection}{\numberline {8.3}N=10000 Results}{8}{subsection.8.3}%
+\contentsline {subsection}{\numberline {8.4}Validation Summary}{8}{subsection.8.4}%
+\contentsline {section}{\numberline {9}Removing Dead Immortals}{8}{section.9}%
+\contentsline {subsection}{\numberline {9.1}Problem: Race Conditions with ArrayList}{8}{subsection.9.1}%
+\contentsline {subsection}{\numberline {9.2}Solution: CopyOnWriteArrayList}{8}{subsection.9.2}%
+\contentsline {section}{\numberline {10}Orderly Shutdown}{9}{section.10}%
+\contentsline {subsection}{\numberline {10.1}Graceful Shutdown Pattern}{9}{subsection.10.1}%
+\contentsline {section}{\numberline {11}Methodology}{9}{section.11}%
+\contentsline {subsection}{\numberline {11.1}Test Environment}{9}{subsection.11.1}%
+\contentsline {subsection}{\numberline {11.2}Execution Commands}{9}{subsection.11.2}%
+\contentsline {subsection}{\numberline {11.3}Running Tests}{9}{subsection.11.3}%
+\contentsline {section}{\numberline {12}Conclusions}{9}{section.12}%
+\contentsline {subsection}{\numberline {12.1}Lessons Learned}{9}{subsection.12.1}%
+\contentsline {section}{\numberline {13}References}{9}{section.13}%

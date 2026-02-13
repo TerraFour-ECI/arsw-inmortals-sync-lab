@@ -1335,7 +1335,7 @@ Actions:
 ## Deliverables
 
 1. **Source code** (Java 21) with the UI working.
-2. **`Lab report in pdf format`** with:
+2. **[Lab report in PDF format](report/main.pdf)** ([LaTeX source](report/main.tex)) with:
    - Part I: CPU diagnosis and changes to eliminate busy-wait.
    - Part II: **early stop** design and how you avoid race conditions on the counter.
    - Part III:
@@ -1374,6 +1374,7 @@ Actions:
 ```bash
 mvn clean verify
 ```
+![MVNcleanVerify](images/mvn-clean-verify.png)
 
 Includes compilation and JUnit tests.
 
