@@ -1,0 +1,105 @@
+\relax 
+\providecommand \babel@aux [2]{\global \let \babel@toc \@gobbletwo }
+\@nameuse{bbl@beforestart}
+\providecommand\hyper@newdestlabel[2]{}
+\providecommand\HyField@AuxAddToFields[1]{}
+\providecommand\HyField@AuxAddToCoFields[2]{}
+\babel@aux{english}{}
+\@writefile{toc}{\contentsline {section}{\numberline {1}Objective}{3}{section.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {2}Problem Description}{3}{section.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}Application Architecture}{3}{subsection.2.1}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Application package structure}}{3}{table.caption.1}\protected@file@percent }
+\providecommand*\caption@xref[2]{\@setref\relax\@undefined{#1}}
+\newlabel{tab:packages}{{1}{3}{Application package structure}{table.caption.1}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {3}Theoretical Framework}{3}{section.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Busy-Wait vs Wait/Notify}{3}{subsection.3.1}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {1}{\ignorespaces Busy-Wait Pattern (Inefficient)}}{3}{lstlisting.1}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {2}{\ignorespaces Wait/Notify Pattern (Efficient)}}{3}{lstlisting.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Deadlock Conditions}{3}{subsection.3.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Deadlock Prevention Strategies}{3}{subsection.3.3}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {3}{\ignorespaces Total Order Lock Acquisition}}{3}{lstlisting.3}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {4}{\ignorespaces TryLock with Backoff}}{3}{lstlisting.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {4}Part I: Producer/Consumer}{4}{section.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Problem: High CPU Consumption}{4}{subsection.4.1}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {5}{\ignorespaces BusySpinQueue - High CPU}}{4}{lstlisting.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Evidence of High CPU Usage}{4}{subsection.4.2}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces jVisualVM Monitor: High CPU usage with busy-wait (spin mode).}}{4}{figure.caption.2}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces jVisualVM Threads: Threads constantly in RUNNABLE state.}}{4}{figure.caption.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Solution: BoundedBuffer with Monitors}{4}{subsection.4.3}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {6}{\ignorespaces BoundedBuffer - Efficient CPU}}{4}{lstlisting.6}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {7}{\ignorespaces BoundedBuffer - Put Method}}{4}{lstlisting.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}Evidence of Efficient CPU Usage}{4}{subsection.4.4}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces jVisualVM Monitor: Low CPU usage with monitors.}}{4}{figure.caption.4}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces jVisualVM Threads: Threads in WAITING state when idle.}}{4}{figure.caption.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.5}Fast Producer / Slow Consumer}{4}{subsection.4.5}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Producer waits efficiently when queue is full.}}{5}{figure.caption.6}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces Producer in WAITING state when queue reaches capacity.}}{5}{figure.caption.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {5}Part II: Distributed Search}{5}{section.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Early Stop Implementation}{5}{subsection.5.1}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Mapping to distributed search pattern}}{5}{table.caption.8}\protected@file@percent }
+\newlabel{tab:mapping}{{2}{5}{Mapping to distributed search pattern}{table.caption.8}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}AtomicInteger for Race-Free Counting}{5}{subsection.5.2}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {8}{\ignorespaces Atomic Counter - No Race Condition}}{5}{lstlisting.8}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.3}Early Stop Check}{5}{subsection.5.3}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {9}{\ignorespaces Early Stop in Thread Loop}}{5}{lstlisting.9}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.4}Evidence of Early Stop}{5}{subsection.5.4}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces With threshold=3: Race stops after 3 arrivals.}}{5}{figure.caption.9}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {8}{\ignorespaces Without threshold: All 17 greyhounds finish.}}{5}{figure.caption.10}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {6}Part III: Immortals Simulation}{5}{section.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.1}Simulation Overview}{5}{subsection.6.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.2}Invariant Calculation}{5}{subsection.6.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.3}Pause \& Check Validation}{6}{subsection.6.3}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {9}{\ignorespaces Pause \& Check showing Score=146, Total Health=70.}}{6}{figure.caption.11}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {10}{\ignorespaces Detailed health breakdown per immortal.}}{6}{figure.caption.12}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.4}Multiple Pause Validation}{6}{subsection.6.4}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces Multiple pause validation (all match)}}{6}{table.caption.13}\protected@file@percent }
+\newlabel{tab:pause}{{3}{6}{Multiple pause validation (all match)}{table.caption.13}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {11}{\ignorespaces Pause test with k=2648, observed total=56.}}{6}{figure.caption.14}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {7}Deadlock Analysis}{6}{section.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.1}Critical Sections Identified}{6}{subsection.7.1}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {10}{\ignorespaces Critical Section - Fight Operation}}{6}{lstlisting.10}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.2}Naive Strategy (Causes Deadlock)}{6}{subsection.7.2}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {11}{\ignorespaces Naive Lock Acquisition}}{6}{lstlisting.11}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {12}{\ignorespaces UI frozen with naive mode after a few seconds.}}{6}{figure.caption.15}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {13}{\ignorespaces jstack output confirms deadlock.}}{7}{figure.caption.16}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.3}Ordered Strategy (No Deadlock)}{7}{subsection.7.3}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {12}{\ignorespaces Ordered Lock Acquisition}}{7}{lstlisting.12}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {14}{\ignorespaces UI remains responsive with ordered mode.}}{7}{figure.caption.17}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {15}{\ignorespaces jstack shows no deadlock with ordered mode.}}{7}{figure.caption.18}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.4}TryLock with Exponential Backoff}{7}{subsection.7.4}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {13}{\ignorespaces TryLock Strategy}}{7}{lstlisting.13}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.5}Strategy Comparison}{7}{subsection.7.5}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces Fight strategy comparison}}{7}{table.caption.19}\protected@file@percent }
+\newlabel{tab:strategies}{{4}{7}{Fight strategy comparison}{table.caption.19}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {8}High N Validation}{7}{section.8}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.1}N=100 Results}{7}{subsection.8.1}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {16}{\ignorespaces Validation N=100 with ordered strategy.}}{7}{figure.caption.20}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {17}{\ignorespaces Validation N=100 with trylock strategy.}}{7}{figure.caption.21}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.2}N=1000 Results}{8}{subsection.8.2}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {18}{\ignorespaces Validation N=1000 with ordered strategy.}}{8}{figure.caption.22}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {19}{\ignorespaces Validation N=1000 with trylock strategy.}}{8}{figure.caption.23}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.3}N=10000 Results}{8}{subsection.8.3}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {20}{\ignorespaces Validation N=10000 with ordered strategy.}}{8}{figure.caption.24}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {21}{\ignorespaces Validation N=10000 with trylock strategy.}}{8}{figure.caption.25}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.4}Validation Summary}{8}{subsection.8.4}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {5}{\ignorespaces High N validation results}}{8}{table.caption.26}\protected@file@percent }
+\newlabel{tab:highN}{{5}{8}{High N validation results}{table.caption.26}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {9}Removing Dead Immortals}{8}{section.9}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {9.1}Problem: Race Conditions with ArrayList}{8}{subsection.9.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {9.2}Solution: CopyOnWriteArrayList}{8}{subsection.9.2}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {14}{\ignorespaces Lock-Free Collection}}{8}{lstlisting.14}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {6}{\ignorespaces Collection comparison}}{8}{table.caption.27}\protected@file@percent }
+\newlabel{tab:collections}{{6}{8}{Collection comparison}{table.caption.27}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {10}Orderly Shutdown}{9}{section.10}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {10.1}Graceful Shutdown Pattern}{9}{subsection.10.1}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {15}{\ignorespaces Orderly Shutdown Implementation}}{9}{lstlisting.15}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {11}Methodology}{9}{section.11}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {11.1}Test Environment}{9}{subsection.11.1}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {7}{\ignorespaces Development environment}}{9}{table.caption.28}\protected@file@percent }
+\newlabel{tab:env}{{7}{9}{Development environment}{table.caption.28}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {11.2}Execution Commands}{9}{subsection.11.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {11.3}Running Tests}{9}{subsection.11.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {12}Conclusions}{9}{section.12}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {12.1}Lessons Learned}{9}{subsection.12.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {13}References}{9}{section.13}\protected@file@percent }
+\gdef \@abspage@last{9}
