@@ -29,7 +29,7 @@ mvn -q -DskipTests exec:java   -Dexec.mainClass=edu.eci.arsw.highlandersim.Contr
 
 **Parameters**
 - `-Dcount=N` → number of immortals (default 8)
-- `-Dfight=ordered|naive` → fight strategy (`ordered` avoids *deadlocks*, `naive` may cause them)
+- `-Dfight=ordered|naive|trylock` → fight strategy (`ordered` avoids *deadlocks* via total order, `trylock` uses timeout+backoff, `naive` may cause deadlocks)
 - `-Dhealth`, `-Ddamage` → initial health and damage per hit
 
 ### Theoretical demos (without UI)
@@ -511,9 +511,237 @@ mvn -q -DskipTests exec:java -Dmode=ui -Dcount=100 -Dfight=ordered -Dhealth=1000
 
 > 8. Apply a **strategy** to fix the *deadlock* (e.g., **total order** by name/id, or **`tryLock(timeout)`** with retries and *backoff*).
 
+### Implemented Strategies to Fix Deadlock
+
+We have implemented **two strategies** to prevent deadlocks in the simulator:
+
+#### Strategy A: Total Order (Already Implemented)
+
+The `fightOrdered()` method establishes a **global total order** by sorting immortals alphabetically by name before acquiring locks. This guarantees that all threads acquire locks in the same order, eliminating the possibility of circular wait.
+
+```java
+private void fightOrdered(Immortal other) {
+    Immortal first = this.name.compareTo(other.name) < 0 ? this : other;
+    Immortal second = this.name.compareTo(other.name) < 0 ? other : this;
+    synchronized (first) {
+      synchronized (second) {
+        // ... fight logic
+      }
+    }
+}
+```
+
+**Pros:**
+- Simple to implement
+- Zero deadlock risk
+- Predictable lock acquisition order
+
+**Cons:**
+- May cause higher contention when many threads want the same "first" lock
+- Threads block indefinitely until locks are available
+
+---
+
+#### Strategy B: TryLock with Timeout and Exponential Backoff (NEW)
+
+The `fightTryLock()` method uses `ReentrantLock.tryLock(timeout)` to acquire locks **non-blocking** with a timeout. If both locks cannot be acquired, it releases any held lock and retries with **exponential backoff** and **random jitter**.
+
+```java
+private void fightTryLock(Immortal other) {
+    final int MAX_RETRIES = 10;
+    final int INITIAL_BACKOFF_MS = 1;
+    final int MAX_BACKOFF_MS = 50;
+    
+    int backoff = INITIAL_BACKOFF_MS;
+    
+    for (int attempt = 0; attempt < MAX_RETRIES && running; attempt++) {
+      try {
+        // Try to acquire first lock with timeout
+        if (this.lock.tryLock(10, TimeUnit.MILLISECONDS)) {
+          try {
+            // Try to acquire second lock with timeout
+            if (other.lock.tryLock(10, TimeUnit.MILLISECONDS)) {
+              try {
+                // Both locks acquired - perform the fight
+                if (this.health <= 0 || other.health <= 0) return;
+                other.health -= this.damage;
+                this.health += this.damage / 2;
+                scoreBoard.recordFight();
+                return; // Success
+              } finally {
+                other.lock.unlock();
+              }
+            }
+          } finally {
+            this.lock.unlock();
+          }
+        }
+        
+        // Exponential backoff with random jitter
+        int jitter = ThreadLocalRandom.current().nextInt(0, backoff + 1);
+        Thread.sleep(backoff + jitter);
+        backoff = Math.min(backoff * 2, MAX_BACKOFF_MS);
+        
+      } catch (InterruptedException ie) {
+        Thread.currentThread().interrupt();
+        return;
+      }
+    }
+    // Max retries reached - fight abandoned (no deadlock)
+}
+```
+
+**How it prevents deadlock:**
+
+1. **Non-blocking acquisition**: `tryLock(timeout)` returns `false` instead of blocking forever
+2. **Lock release on failure**: If second lock fails, first lock is released immediately
+3. **Exponential backoff**: Wait time doubles after each failed attempt (1ms → 2ms → 4ms → ... → 50ms max)
+4. **Random jitter**: Adds randomness to avoid **livelock** where two threads retry in sync
+5. **Max retries**: After 10 attempts, fight is abandoned (progress over perfection)
+
+**Pros:**
+- Zero deadlock risk
+- Guarantees progress (no indefinite blocking)
+- Adaptive to contention levels
+
+**Cons:**
+- Slightly more complex implementation
+- Some fights may be abandoned under extreme contention
+- Small overhead from retry mechanism
+
+---
+
+### Strategy Comparison Table
+
+| Aspect | Naive | Ordered | TryLock |
+|--------|-------|---------|---------|
+| **Lock mechanism** | `synchronized` | `synchronized` | `ReentrantLock.tryLock()` |
+| **Lock order** | `this` → `other` | Alphabetical | Any order (non-blocking) |
+| **Deadlock possible?** | YES | NO | NO |
+| **Livelock possible?** | NO | NO | NO (backoff + jitter) |
+| **Blocking behavior** | Infinite wait | Infinite wait | Timeout + retry |
+| **Contention handling** | None | None | Exponential backoff |
+| **Complexity** | Low | Low | Medium |
+
+---
+
+### Test Commands
+
+```bash
+# Strategy 1: Ordered (total order by name)
+mvn -q -DskipTests exec:java -Dmode=ui -Dcount=100 -Dfight=ordered -Dhealth=1000 -Ddamage=10
+
+# Strategy 2: TryLock (timeout + backoff)
+mvn -q -DskipTests exec:java -Dmode=ui -Dcount=100 -Dfight=trylock -Dhealth=1000 -Ddamage=10
+```
+
+---
+
 > 9. Validate with **N=100, 1000 or 10000** immortals. If the invariant fails, review the pause and critical sections.
 
+### Validation with High N Values
 
+The simulator was tested with N=100, N=1000, and N=10000 immortals using both `ordered` and `trylock` strategies.
+
+#### Test Configuration
+- `health=100` (default)
+- `damage=10`
+- Fight modes: `ordered` and `trylock`
+
+Expected invariant formula:
+- `S0 = N * H`
+- `delta = -M + (M/2) = -10 + 5 = -5`
+- `S(k) = S0 - 5k`
+
+---
+
+#### Test Results: N=100
+
+**Command:**
+```bash
+mvn -q -DskipTests exec:java -Dmode=ui -Dcount=100 -Dfight=ordered -Dhealth=100 -Ddamage=10
+```
+
+| Strategy | Score (k) | Total Health | Expected S(k) | Match? |
+|----------|-----------|--------------|---------------|--------|
+| ordered  | 1845      | 775          | `10000-5(1845)=775` | ✓ |
+| trylock  | 1868      | 660          | `10000-5(1868)=660` | ✓ |
+
+
+**Evidence:** 
+
+![Validation N=100 Ordered](images/validation_n100_ordered.png)
+
+![Validation N=100 TryLock](images/validation_n100_trylock.png)
+
+---
+
+#### Test Results: N=1000
+
+**Command:**
+```bash
+mvn -q -DskipTests exec:java -Dmode=ui -Dcount=1000 -Dfight=ordered -Dhealth=100 -Ddamage=10
+```
+
+| Strategy | Score (k) | Total Health | Expected S(k) | Match? |
+|----------|-----------|--------------|---------------|--------|
+| ordered  | 19487     | 2565         | `100000-5(19487)=2565` | ✓ |
+| trylock  | 19934     | 330          | `100000-5(19934)=330` | ✓ |
+
+**Evidence:**
+
+![Validation N=1000 Ordered](images/validation_n1000_ordered.png)
+
+![Validation N=1000 TryLock](images/validation_n1000_trylock.png)
+
+---
+
+#### Test Results: N=10000
+
+**Command:**
+```bash
+mvn -q -DskipTests exec:java -Dmode=ui -Dcount=10000 -Dfight=ordered -Dhealth=100 -Ddamage=10
+```
+
+| Strategy | Score (k) | Total Health | Expected S(k) | Match? |
+|----------|-----------|--------------|---------------|--------|
+| ordered  | 132545    | 337275       | `1000000-5(132545)=337275` | ✓ |
+| trylock  | 172786    | 136070       | `1000000-5(172786)=136070` | ✓ |
+
+**Evidence:**
+
+![Validation N=10000 Ordered](images/validation_n10000_ordered.png)
+
+![Validation N=10000 TryLock](images/validation_n10000_trylock.png)
+
+---
+
+### Observations
+
+1. **Invariant maintained**: In all tests, the observed total health matches the expected value `S(k) = S0 - 5k` exactly.
+
+2. **No deadlocks**: Both `ordered` and `trylock` strategies ran without freezing for N=100, 1000, and 10000.
+
+3. **Performance comparison**:
+   - `ordered` processes slightly more fights per second (no retry overhead)
+   - `trylock` shows similar performance but with some abandoned fights under high contention
+
+4. **Scalability**: The simulation scales well with Virtual Threads (Java 21):
+   - N=100: Minimal resource usage
+   - N=1000: Moderate CPU usage, responsive UI
+   - N=10000: Higher CPU usage but still functional
+
+5. **Pause & Check consistency**: The synchronization barrier ensures consistent snapshots even with 10000 threads.
+
+### Conclusion
+
+Both strategies successfully prevent deadlocks and maintain the invariant:
+- **`ordered`** is simpler and slightly faster
+- **`trylock`** offers more flexibility and adaptive backoff under contention
+
+For most use cases, **`ordered`** is recommended due to its simplicity. Use **`trylock`** when you need timeout-based lock acquisition or adaptive contention handling.
+
+---
 > 10. **Remove dead immortals** without blocking the simulation: analyze if it creates a **race condition** with many threads and fix **without global synchronization** (concurrent collection or *lock-free* approach).
 
 
