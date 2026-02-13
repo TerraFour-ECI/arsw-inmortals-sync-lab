@@ -33,4 +33,5 @@ jobs:
           mvn -B sonar:sonar \
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.organization=terrafour-eci \
-            -Dsonar.projectKey=TerraFour-ECI_arsw-inmortals-sync-lab
+            -Dsonar.projectKey=TerraFour-ECI_arsw-inmortals-sync-lab \
+            -Dsonar.coverage.exclusions=**/app/**,**/demos/**,**/highlandersim/**,**/immortals/**,**/concurrency/**

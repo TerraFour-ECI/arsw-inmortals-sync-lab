@@ -75,7 +75,7 @@ public final class Immortal implements Runnable {
   private Immortal pickOpponent() {
     if (population.size() <= 1) return null;
     for (int attempts = 0; attempts < 10; attempts++) {
-      Immortal other = population.get(ThreadLocalRandom.current().nextInt(population.size()));
+      Immortal other = population.get(ThreadLocalRandom.current().nextInt(population.size())); // NOSONAR - ThreadLocalRandom is safe for game simulation
       if (other != this && other.isAlive()) {
         return other;
       }
@@ -142,7 +142,7 @@ public final class Immortal implements Runnable {
           }
         }
 
-        int jitter = ThreadLocalRandom.current().nextInt(0, backoff + 1);
+        int jitter = ThreadLocalRandom.current().nextInt(0, backoff + 1); // NOSONAR - ThreadLocalRandom is safe for jitter in backoff
         Thread.sleep(backoff + jitter);
         backoff = Math.min(backoff * 2, MAX_BACKOFF_MS);
 
