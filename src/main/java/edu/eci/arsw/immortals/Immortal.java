@@ -143,7 +143,7 @@ public final class Immortal implements Runnable {
         }
 
         int jitter = ThreadLocalRandom.current().nextInt(0, backoff + 1); // NOSONAR - ThreadLocalRandom is safe for jitter in backoff
-        Thread.sleep(backoff + jitter);
+        Thread.sleep((long) backoff + jitter);
         backoff = Math.min(backoff * 2, MAX_BACKOFF_MS);
 
       } catch (InterruptedException ie) {
