@@ -104,7 +104,26 @@ public final class ControlFrame extends JFrame {
     manager.resume();
   }
 
-  private void onStop(ActionEvent e) { safeStop(); }
+  private void onStop(ActionEvent e) {
+    if (manager == null) {
+      output.setText("No simulation running.\n");
+      return;
+    }
+
+    output.setText("Stopping simulation... please wait.\n");
+    stopBtn.setEnabled(false);
+
+    new Thread(() -> {
+      long startTime = System.currentTimeMillis();
+      safeStop();
+      long elapsed = System.currentTimeMillis() - startTime;
+
+      SwingUtilities.invokeLater(() -> {
+        output.setText("Simulation stopped gracefully in %d ms.\n".formatted(elapsed));
+        stopBtn.setEnabled(true);
+      });
+    }).start();
+  }
 
   private void safeStop() {
     if (manager != null) {

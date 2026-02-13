@@ -9,6 +9,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 public final class ImmortalManager implements AutoCloseable {
   private final List<Immortal> population = new CopyOnWriteArrayList<>();
@@ -44,9 +45,40 @@ public final class ImmortalManager implements AutoCloseable {
 
   public void pause() { controller.pause(); }
   public void resume() { controller.resume(); }
+
+  /**
+   * Performs an orderly shutdown of the simulation:
+   * 1. Resumes if paused (to allow threads to check stop flag)
+   * 2. Signals all immortals to stop
+   * 3. Waits for threads to finish gracefully (with timeout)
+   * 4. Forces shutdown if timeout exceeded
+   */
   public void stop() {
-    for (Immortal im : population) im.stop();
-    if (exec != null) exec.shutdownNow();
+    if (exec == null) return;
+
+    if (controller.paused()) {
+      controller.resume();
+    }
+
+    for (Immortal im : population) {
+      im.stop();
+    }
+
+    exec.shutdown();
+
+    try {
+      if (!exec.awaitTermination(5, TimeUnit.SECONDS)) {
+        exec.shutdownNow();
+        if (!exec.awaitTermination(2, TimeUnit.SECONDS)) {
+          System.err.println("Warning: Some threads did not terminate");
+        }
+      }
+    } catch (InterruptedException ie) {
+      exec.shutdownNow();
+      Thread.currentThread().interrupt();
+    }
+
+    exec = null;
   }
 
   public int aliveCount() {

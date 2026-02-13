@@ -51,9 +51,9 @@ public final class Immortal implements Runnable {
   public void run() {
     controller.registerThread();
     try {
-      while (running && isAlive()) {
+      while (running && isAlive() && !Thread.currentThread().isInterrupted()) {
         controller.awaitIfPaused();
-        if (!running) break;
+        if (!running || Thread.currentThread().isInterrupted()) break;
         var opponent = pickOpponent();
         if (opponent == null) continue;
         String mode = System.getProperty("fight", "ordered");
