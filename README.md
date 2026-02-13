@@ -205,6 +205,125 @@ Rewrite the **blacklist searcher** so that the search **stops as soon as** the s
 
 > You can use `AtomicInteger` or minimal synchronization over the critical section of the counter.
 
+### Part II — Solution (implemented in `arsw-dogs-race-concurrent-lab`)
+
+> The original assignment references a "blacklist searcher" from a previous lab. In our case, Part II was implemented in the **[arsw-dogs-race-concurrent-lab](https://github.com/TerraFour-ECI/arsw-dogs-race-concurrent-lab)** repository, adapting the distributed-search / early-stop pattern to the greyhound race domain.
+
+#### Mapping to the Distributed Search Pattern
+
+| Distributed Search Concept | Dogs Race Equivalent |
+|---|---|
+| **Search threads** | `Galgo` threads (one per greyhound) |
+| **Servers to check** | Steps in the lane (`paso < carril.size()`) |
+| **Finding an occurrence** | A greyhound reaching the finish line (`registerArrival()`) |
+| **Shared occurrence counter** | `AtomicInteger nextPosition` in `ArrivalRegistry` |
+| **`BLACK_LIST_ALARM_COUNT`** | `arrivalAlarmCount` (configurable via `-Dthreshold=N`) |
+| **Orchestrator (join + read result)** | `MainCanodromo` joining all threads, then reading winner |
+
+#### How `AtomicInteger` Avoids Race Conditions
+
+The position counter was changed from `int nextPosition` (non-atomic read-modify-write) to `AtomicInteger`:
+
+```java
+// BEFORE: 3 separate operations — race condition possible
+final int position = nextPosition++;  // read, add, write
+
+// AFTER: single atomic CAS operation — no race condition
+final int position = nextPosition.getAndIncrement();
+```
+
+`AtomicInteger.getAndIncrement()` uses a **Compare-And-Swap (CAS)** CPU instruction that atomically reads and increments in a single, indivisible operation. No two threads can ever read the same value.
+
+**Minimal synchronization** is kept **only** for the compound winner assignment (check `winner == null` then set), which is a compound check-then-act on two fields:
+
+```java
+// Counter: lock-free (AtomicInteger)
+final int position = nextPosition.getAndIncrement();
+
+// Winner: minimal synchronized (compound check-then-act)
+synchronized (winnerLock) {
+    if (winner == null) {
+        winner = dogName;
+    }
+    return new ArrivalSnapshot(position, winner);
+}
+```
+
+#### How Early Stop Works
+
+Each `Galgo` thread checks the shared counter **every iteration** of its main loop and breaks early when the arrival threshold is reached:
+
+```java
+private void corra() throws InterruptedException {
+    while (paso < carril.size()) {
+        control.awaitIfPaused();
+
+        // Early-stop: check shared AtomicInteger threshold
+        if (registry.hasReachedThreshold()) {
+            stoppedEarly = true;
+            break;  // Do NOT traverse remaining steps
+        }
+
+        Thread.sleep(MIN_STEP_DELAY + RandomGenerator.nextInt(MAX_EXTRA_DELAY));
+        carril.setPasoOn(paso++);
+        // ...
+    }
+}
+```
+
+The threshold check reads the `AtomicInteger` (guaranteed visibility across threads):
+
+```java
+public boolean hasReachedThreshold() {
+    return (nextPosition.get() - 1) >= arrivalAlarmCount;
+}
+```
+
+#### Thread Interaction Diagram
+
+```
+MainCanodromo (orchestrator)
+    │
+    ├── creates ArrivalRegistry(threshold=3)
+    ├── creates & starts 17 Galgo threads
+    │       │
+    │       ├── Galgo-0:  run steps... finish → registerArrival() → AtomicInteger: 1
+    │       ├── Galgo-5:  run steps... finish → registerArrival() → AtomicInteger: 2
+    │       ├── Galgo-2:  run steps... finish → registerArrival() → AtomicInteger: 3 ← THRESHOLD
+    │       │
+    │       ├── Galgo-1:  checks hasReachedThreshold() → true → BREAK (stopped early)
+    │       ├── Galgo-3:  checks hasReachedThreshold() → true → BREAK (stopped early)
+    │       ├── ... (remaining greyhounds also stop early)
+    │       │
+    ├── join() all 17 threads (waits for all to finish/break)
+    └── read results: winner, total arrivals, stopped-early count
+```
+#### How to Run
+
+```bash
+# With threshold=3: race stops after 3 arrivals
+mvn -q exec:java -Dexec.mainClass=edu.eci.arsw.dogsrace.app.MainCanodromo -Dthreshold=3
+
+# Default: no threshold (all greyhounds finish)
+mvn -q exec:java -Dexec.mainClass=edu.eci.arsw.dogsrace.app.MainCanodromo
+```
+#### Evidence of Execution
+
+**With threshold=3** (race stops after 3 arrivals):
+!["With threshold = 3"](/images/part2-first-execution.png)
+
+**Without threshold** (all 17 greyhounds finish):
+!["With threshold = 3"](/images/part2-second-execution.png)
+
+#### Key Design Decisions
+
+1. **`AtomicInteger` for the counter** — lock-free, single CAS operation, explicitly recommended by the assignment. Aligns with `ScoreBoard` using `AtomicLong` in the immortals lab.
+2. **Threshold via constructor + system property** — configurable without breaking existing code (`-Dthreshold=N`). Default `Integer.MAX_VALUE` preserves original behavior.
+3. **Check at top of loop** — one-line addition to `Galgo.corra()`, minimal and non-invasive.
+4. **Random step delay** — greyhounds now run at variable speed (50–150ms per step), ensuring some finish before others so the threshold can trigger while slower dogs are mid-track.
+
+
+
 ---
 
 ## Part III — (Progress) Synchronization and *Deadlocks* with *Highlander Simulator*
