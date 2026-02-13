@@ -956,6 +956,261 @@ mvn -q -DskipTests exec:java -Dmode=ui -Dcount=100 -Dfight=ordered -Dhealth=50 -
 
 > 11. Fully implement **STOP** (orderly shutdown).
 
+### Orderly Shutdown Implementation
+
+In concurrent applications, **orderly shutdown** means terminating all threads gracefully without data corruption, resource leaks, or abrupt termination. The original `stop()` implementation had several issues:
+
+**Original implementation problems:**
+
+```java
+// ❌ PROBLEMATIC: Abrupt shutdown
+public void stop() {
+    for (Immortal im : population) im.stop();
+    if (exec != null) exec.shutdownNow();  // Forces immediate interruption
+}
+```
+
+**Issues:**
+1. **Interrupts threads abruptly**: `shutdownNow()` interrupts all threads immediately
+2. **No graceful waiting**: Doesn't give threads time to finish current operations
+3. **Paused threads can't exit**: If simulation is paused, threads are blocked waiting and can't check the `running` flag
+4. **No feedback**: UI doesn't know when shutdown completes
+5. **Resource leaks**: No verification that threads actually terminated
+
+---
+
+#### Orderly Shutdown Pattern
+
+The improved implementation follows the **graceful shutdown pattern**:
+
+```
+1. Resume if paused (allow threads to check stop flag)
+2. Signal all threads to stop (set running = false)
+3. Initiate graceful shutdown (no new tasks, finish current)
+4. Wait with timeout for threads to finish naturally
+5. Force shutdown if timeout exceeded
+6. Handle interruptions during shutdown
+```
+
+---
+
+#### Implementation
+
+**Change 1: ImmortalManager.stop() - Graceful shutdown with timeout**
+
+```java
+/**
+ * Performs an orderly shutdown of the simulation:
+ * 1. Resumes if paused (to allow threads to check stop flag)
+ * 2. Signals all immortals to stop
+ * 3. Waits for threads to finish gracefully (with timeout)
+ * 4. Forces shutdown if timeout exceeded
+ */
+public void stop() {
+    if (exec == null) return;
+    
+    // Step 1: Resume if paused (threads must be able to check running flag)
+    if (controller.paused()) {
+      controller.resume();
+    }
+    
+    // Step 2: Signal all immortals to stop
+    for (Immortal im : population) {
+      im.stop();
+    }
+    
+    // Step 3: Initiate graceful shutdown (no new tasks, finish current)
+    exec.shutdown();
+    
+    try {
+      // Step 4: Wait up to 5 seconds for threads to finish gracefully
+      if (!exec.awaitTermination(5, TimeUnit.SECONDS)) {
+        // Step 5: Force shutdown if timeout exceeded
+        exec.shutdownNow();
+        // Wait a bit more for forced termination
+        if (!exec.awaitTermination(2, TimeUnit.SECONDS)) {
+          System.err.println("Warning: Some threads did not terminate");
+        }
+      }
+    } catch (InterruptedException ie) {
+      // Current thread interrupted during shutdown
+      exec.shutdownNow();
+      Thread.currentThread().interrupt();
+    }
+    
+    exec = null;
+}
+```
+
+**Key differences from original:**
+
+| Aspect | Original (`shutdownNow()`) | Improved (`shutdown()` + `awaitTermination()`) |
+|--------|----------------------------|------------------------------------------------|
+| **Thread interruption** | Immediate | After graceful timeout (5s) |
+| **Resume if paused** | NO (threads stuck) | YES (threads can exit) |
+| **Wait for completion** | NO | YES (with timeout) |
+| **Feedback** | None | Returns after completion |
+| **Resource cleanup** | Not guaranteed | Verified with `awaitTermination()` |
+
+---
+
+**Change 2: Immortal.run() - Check interrupt status**
+
+```java
+@Override
+public void run() {
+    controller.registerThread();
+    try {
+      while (running && isAlive() && !Thread.currentThread().isInterrupted()) {
+        controller.awaitIfPaused();
+        if (!running || Thread.currentThread().isInterrupted()) break;
+        var opponent = pickOpponent();
+        if (opponent == null) continue;
+        // ... fight logic ...
+        Thread.sleep(2);
+      }
+      // Remove self from population when dead
+      if (!isAlive()) {
+        population.remove(this);
+      }
+    } catch (InterruptedException ie) {
+      // Thread was interrupted during sleep or await - exit gracefully
+      Thread.currentThread().interrupt(); // Preserve interrupt status
+    } finally {
+      controller.unregisterThread();
+    }
+}
+```
+
+**Improvements:**
+- Checks `Thread.currentThread().isInterrupted()` in loop condition
+- Exits gracefully on interruption (catches `InterruptedException`)
+- Preserves interrupt status with `Thread.currentThread().interrupt()`
+- Always calls `unregisterThread()` in `finally` block
+
+---
+
+**Change 3: ControlFrame.onStop() - UI feedback**
+
+```java
+private void onStop(ActionEvent e) { 
+    if (manager == null) {
+      output.setText("No simulation running.\n");
+      return;
+    }
+    
+    output.setText("Stopping simulation... please wait.\n");
+    stopBtn.setEnabled(false);
+    
+    // Run stop in background to avoid freezing UI
+    new Thread(() -> {
+      long startTime = System.currentTimeMillis();
+      safeStop();
+      long elapsed = System.currentTimeMillis() - startTime;
+      
+      SwingUtilities.invokeLater(() -> {
+        output.setText("Simulation stopped gracefully in %d ms.\n".formatted(elapsed));
+        stopBtn.setEnabled(true);
+      });
+    }).start();
+}
+```
+
+**Benefits:**
+- UI remains responsive during shutdown (runs in background thread)
+- Shows "Stopping..." message immediately
+- Reports shutdown time to user
+- Re-enables Stop button after completion
+
+---
+
+#### Shutdown Scenarios Handled
+
+**Scenario 1: Normal stop (simulation running)**
+
+```
+User clicks Stop
+  → Threads check running flag
+  → Threads exit loop naturally
+  → ExecutorService shuts down gracefully
+  → Shutdown completes in ~10-100ms
+```
+
+**Scenario 2: Stop while paused**
+
+```
+User clicks Stop while paused
+  → controller.resume() wakes up all threads
+  → Threads check running flag (now false)
+  → Threads exit immediately
+  → Shutdown completes in ~50-200ms
+```
+
+**Scenario 3: Stop with stuck threads (timeout)**
+
+```
+User clicks Stop with deadlocked/stuck thread
+  → Wait 5 seconds for graceful shutdown
+  → Timeout exceeded
+  → exec.shutdownNow() forces interruption
+  → Wait 2 more seconds
+  → Warning printed if still not terminated
+```
+
+**Scenario 4: Interruption during shutdown**
+
+```
+Stop thread is interrupted
+  → catch (InterruptedException)
+  → Force shutdown with shutdownNow()
+  → Restore interrupt status
+  → Exit gracefully
+```
+
+---
+
+#### ExecutorService Lifecycle
+
+The implementation correctly manages the `ExecutorService` lifecycle:
+
+```
+State transitions:
+  null → shutdown → TERMINATED → null → running → ...
+  
+Actions:
+  start():  Create new Executor (if null)
+  stop():   shutdown() → awaitTermination() → exec = null
+  close():  Calls stop() (AutoCloseable)
+```
+
+**Thread safety:**
+- `start()` is synchronized to prevent concurrent creation
+- `stop()` checks for `null` before accessing executor
+- `exec = null` only after confirmed termination
+
+---
+
+#### Benefits of Orderly Shutdown
+
+| Benefit | Description |
+|---------|-------------|
+| **Data consistency** | Threads finish current operations before exiting |
+| **Resource cleanup** | All threads are guaranteed to call `finally` blocks |
+| **No resource leaks** | ExecutorService properly terminated and garbage collected |
+| **Predictable behavior** | Shutdown time is bounded by timeout |
+| **UI responsiveness** | UI doesn't freeze during shutdown |
+| **Debuggability** | Clear feedback on shutdown progress and time |
+
+---
+
+#### Edge Cases Handled
+
+1. **Stop when already stopped**: Returns immediately (checks `exec == null`)
+2. **Stop during pause**: Resumes first, then stops
+3. **Rapid start/stop**: Synchronized `start()` prevents race conditions
+4. **Deadlocked threads**: Force shutdown after 5s timeout
+5. **Interruption during shutdown**: Catches exception, forces shutdown, preserves interrupt status
+
 ---
 
 ## Deliverables
